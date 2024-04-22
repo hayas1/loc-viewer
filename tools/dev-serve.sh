@@ -5,4 +5,4 @@ scripts=$(dirname "$(realpath "$0")")
 
 repo=$(dirname "$(dirname "$(realpath "$0")")")
 
-trunk serve --dist "$repo"/public --port 8080
+trunk serve --dist "$repo"/target/public --port 8080

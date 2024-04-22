@@ -5,4 +5,4 @@ scripts=$(dirname "$(realpath "$0")")
 
 repo=$(dirname "$(dirname "$(realpath "$0")")")
 
-trunk build --release --dist "$repo"/public
+trunk build --release --dist "$repo"/target/public
