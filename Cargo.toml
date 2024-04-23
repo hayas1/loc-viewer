@@ -7,3 +7,5 @@ edition = "2021"
 
 [dependencies]
 yew = { version = "0.21", features = ["csr"] }
+
+tokei = "12.1"
