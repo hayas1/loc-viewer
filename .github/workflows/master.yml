@@ -28,7 +28,7 @@ jobs:
     - name: Release test
       run: cargo test --release
     - name: Build App
-      run: yes | PUBLIC_URL="${{ github.event.repository.name }}" ./tools/prod-build.sh
+      run: yes | ./tools/prod-build.sh
 
     - name: Upload artifact
       uses: actions/upload-pages-artifact@v3
