@@ -20,3 +20,18 @@ if ! (type trunk >/dev/null 2>&1); then
         ;;
     esac
 fi
+
+if ! (type clang >/dev/null 2>&1); then
+    printf ">>> install clang? [y/N]"
+    read -r ans
+    case $ans in
+    [Yy]*)
+        sudo apt update
+        sudo apt install -y clang
+        ;;
+    *)
+        echo "do not install clang. finish."
+        exit 1
+        ;;
+    esac
+fi
