@@ -1,3 +1,5 @@
+pub mod repository;
+
 use std::{
     collections::{btree_map::Entry, BTreeMap},
     path::PathBuf,
