@@ -1,4 +1,4 @@
 pub mod components;
 pub mod error;
+pub mod github;
 pub mod loc;
-pub mod repository;

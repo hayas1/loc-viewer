@@ -1,5 +1,3 @@
-pub mod repository;
-
 use std::{
     collections::{btree_map::Entry, BTreeMap},
     path::PathBuf,
@@ -9,9 +7,7 @@ use tokei::{Config, Language, LanguageType, Languages, Report};
 
 pub fn get_statistics(repo: &str, config: &Config) -> Languages {
     let mut languages = walk(repo, config);
-    languages
-        .iter_mut()
-        .for_each(|(_, language)| language.total());
+    languages.iter_mut().for_each(|(_, language)| language.total());
     languages
 }
 
@@ -57,9 +53,9 @@ pub fn walk(repo: &str, config: &Config) -> Languages {
     .into_iter()
     .collect();
 
-    let files = repo_contents.iter().filter_map(|(path, contents)| {
-        LanguageType::from_path(path, &config).map(|l| (l, path, contents))
-    });
+    let files = repo_contents
+        .iter()
+        .filter_map(|(path, contents)| LanguageType::from_path(path, &config).map(|l| (l, path, contents)));
 
     for (lt, path, contents) in files {
         let language = languages.entry(lt).or_insert_with(Language::new);
