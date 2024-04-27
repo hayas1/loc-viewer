@@ -1,0 +1,13 @@
+query Repository($owner: String!, $name: String!) {
+    repository(owner: $owner, name: $name) {
+        name
+        owner {
+            __typename
+            login
+        }
+        stargazers(first: 100) {
+            totalCount
+        }
+    }
+}
+

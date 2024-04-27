@@ -35,3 +35,17 @@ if ! (type clang >/dev/null 2>&1); then
         ;;
     esac
 fi
+
+if ! (type graphql-client >/dev/null 2>&1); then
+    printf ">>> install graphql_client_cli? [y/N]"
+    read -r ans
+    case $ans in
+    [Yy]*)
+        cargo install graphql_client_cli
+        ;;
+    *)
+        echo "do not install graphql_client_cli. finish."
+        exit 1
+        ;;
+    esac
+fi
