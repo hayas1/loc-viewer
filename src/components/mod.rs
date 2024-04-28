@@ -1,3 +1,5 @@
+use std::path::PathBuf;
+
 use url::Url;
 use yew::prelude::*;
 
@@ -21,7 +23,7 @@ pub fn app() -> Html {
                 // contents.set(Some(GitHubApiClient::new(repository).trees("master").await.unwrap()));
                 let blobs =
                     GitHubApiClient::new(repository).blobs("79710170d2cca3eafb449f9cb6432f0b3b3e67ed").await.unwrap();
-                let content = GitHubBlob::from_model(None, blobs).unwrap().content;
+                let content = GitHubBlob::from_model(PathBuf::from("Cargo.toml"), blobs).unwrap().content;
                 contents.set(Some(content));
             })
         });

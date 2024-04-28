@@ -5,16 +5,16 @@ use std::path::PathBuf;
 use super::models::{BlobsModel, EncodingType};
 
 pub struct GitHubBlob {
-    pub path: Option<PathBuf>, // TODO Path cause compile error (sized)
+    pub path: PathBuf,
     pub content: String,
 }
 
 impl GitHubBlob {
-    pub fn new(path: Option<PathBuf>, content: String) -> Self {
+    pub fn new(path: PathBuf, content: String) -> Self {
         Self { path, content }
     }
 
-    pub fn from_model(path: Option<PathBuf>, model: BlobsModel) -> Result<Self> {
+    pub fn from_model(path: PathBuf, model: BlobsModel) -> Result<Self> {
         let content = BlobsModelDecoder::new(&model).decode()?;
         Ok(Self::new(path, content))
     }
