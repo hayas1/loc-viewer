@@ -2,7 +2,7 @@ use url::Url;
 use yew::prelude::*;
 
 use crate::{
-    github::{client::GitHubApiClient, repository::GitHubRepository},
+    github::{blob::GitHubBlob, client::GitHubApiClient, repository::GitHubRepository},
     loc::get_statistics,
 };
 
@@ -19,9 +19,10 @@ pub fn app() -> Html {
         use_effect_with((), move |_| {
             wasm_bindgen_futures::spawn_local(async move {
                 // contents.set(Some(GitHubApiClient::new(repository).trees("master").await.unwrap()));
-                contents.set(Some(
-                    GitHubApiClient::new(repository).blobs("ea8c4bf7f35f6f77f75d92ad8ce8349f6e81ddba").await.unwrap(),
-                ));
+                let blobs =
+                    GitHubApiClient::new(repository).blobs("79710170d2cca3eafb449f9cb6432f0b3b3e67ed").await.unwrap();
+                let content = GitHubBlob::from_model(None, blobs).unwrap().content;
+                contents.set(Some(content));
             })
         });
     }

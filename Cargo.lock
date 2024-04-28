@@ -1287,6 +1287,7 @@ name = "loc-viwer"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "base64 0.22.0",
  "gloo 0.11.0",
  "octocrab",
  "serde",
