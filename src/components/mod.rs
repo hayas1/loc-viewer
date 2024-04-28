@@ -18,7 +18,10 @@ pub fn app() -> Html {
         let contents = contents.clone();
         use_effect_with((), move |_| {
             wasm_bindgen_futures::spawn_local(async move {
-                contents.set(Some(GitHubApiClient::new(repository).get_repository().await.unwrap()));
+                // contents.set(Some(GitHubApiClient::new(repository).trees("master").await.unwrap()));
+                contents.set(Some(
+                    GitHubApiClient::new(repository).blobs("ea8c4bf7f35f6f77f75d92ad8ce8349f6e81ddba").await.unwrap(),
+                ));
             })
         });
     }

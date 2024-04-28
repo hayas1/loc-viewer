@@ -1289,6 +1289,8 @@ dependencies = [
  "anyhow",
  "gloo 0.11.0",
  "octocrab",
+ "serde",
+ "serde_json",
  "thiserror",
  "tokei",
  "url",
