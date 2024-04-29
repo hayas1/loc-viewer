@@ -1,8 +1,7 @@
 use std::path::PathBuf;
 
 use anyhow::{anyhow, ensure, Result};
-use async_stream::stream;
-use futures::{stream::unfold, Stream};
+use futures::{stream, Stream, StreamExt};
 use url::Url;
 
 use crate::{
@@ -42,23 +41,21 @@ impl GitHubRepository {
         Ok(url)
     }
 
-    pub async fn walk(&self) -> impl Stream<Item = Result<GitHubBlob>> {
+    pub async fn walk(&self) -> impl Stream<Item = Result<GitHubBlob>> + '_ {
         let client = GitHubApiClient::new(self.clone()); // TODO lifetime
         let sha = "master";
 
         let TreesModel { tree, .. } = client.trees(sha, true).await.unwrap();
-        let blob_paths = tree.into_iter().filter_map(|SubtreeModel { path, contents_type, .. }| match contents_type {
-            ContentsType::Tree => None,
-            ContentsType::Blob => Some(path),
-            ContentsType::Commit => None,
-        });
-        unfold((blob_paths, sha, client), |(mut paths, sha, client)| async move {
-            let path = paths.next()?;
-            match client.raw(&sha, &path).await {
-                Ok(raw) => Some((Ok(GitHubBlob::new(PathBuf::from(&path), raw)), (paths, sha, client))),
-                Err(err) => Some((Err(anyhow!(err)), (paths, sha, client))),
-            }
-        })
+
+        stream::iter(tree.into_iter())
+            .filter_map(move |SubtreeModel { path, contents_type, .. }| async move {
+                match contents_type {
+                    ContentsType::Tree => None,
+                    ContentsType::Blob => Some(GitHubBlob::repo_path(self.clone(), PathBuf::from(&path), sha)),
+                    ContentsType::Commit => None,
+                }
+            })
+            .buffered(32) // num_cpus::get() returns 1
     }
 
     pub async fn get_statistics(&self) -> Result<Statistics> {
