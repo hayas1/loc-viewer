@@ -4,6 +4,7 @@ use std::path::PathBuf;
 
 use super::models::{BlobsModel, EncodingType};
 
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub struct GitHubBlob {
     pub path: PathBuf,
     pub content: String,

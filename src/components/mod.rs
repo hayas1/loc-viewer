@@ -1,12 +1,8 @@
-use std::path::PathBuf;
-
+use futures::{pin_mut, StreamExt};
 use url::Url;
 use yew::prelude::*;
 
-use crate::{
-    github::{blob::GitHubBlob, client::GitHubApiClient, repository::GitHubRepository},
-    loc::get_statistics,
-};
+use crate::{github::repository::GitHubRepository, loc::get_statistics};
 
 #[function_component(App)]
 pub fn app() -> Html {
@@ -20,11 +16,17 @@ pub fn app() -> Html {
         let contents = contents.clone();
         use_effect_with((), move |_| {
             wasm_bindgen_futures::spawn_local(async move {
-                // contents.set(Some(GitHubApiClient::new(repository).trees("master").await.unwrap()));
-                let blobs =
-                    GitHubApiClient::new(repository).blobs("79710170d2cca3eafb449f9cb6432f0b3b3e67ed").await.unwrap();
-                let content = GitHubBlob::from_model(PathBuf::from("Cargo.toml"), blobs).unwrap().content;
-                contents.set(Some(content));
+                let stream = repository.walk().await;
+                pin_mut!(stream); // needed for iteration
+
+                let mut buff = Vec::new();
+                while let Some(value) = stream.next().await {
+                    match value {
+                        Ok(value) => buff.push(value),
+                        Err(_) => break,
+                    }
+                    contents.set(Some(buff.clone()))
+                }
             })
         });
     }

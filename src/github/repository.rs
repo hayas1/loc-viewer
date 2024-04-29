@@ -1,7 +1,19 @@
+use std::path::PathBuf;
+
 use anyhow::{anyhow, ensure, Result};
+use async_stream::stream;
+use futures::Stream;
 use url::Url;
 
-use crate::error::InvalidRepositoryUrl;
+use crate::{
+    error::InvalidRepositoryUrl,
+    github::{
+        client::GitHubApiClient,
+        models::{ContentsType, SubtreeModel, TreesModel},
+    },
+};
+
+use super::blob::GitHubBlob;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct GitHubRepository {
@@ -28,6 +40,32 @@ impl GitHubRepository {
         let mut url = Url::parse(Self::ORIGIN)?;
         url.set_path(&[&self.owner[..], &self.repo[..]].join("/"));
         Ok(url)
+    }
+
+    pub async fn walk(&self) -> impl Stream<Item = Result<GitHubBlob>> {
+        let client = GitHubApiClient::new(self.clone()); // TODO lifetime
+        let sha = "master";
+
+        stream! {
+            let root = client.trees(sha).await?;
+            let mut bfs = vec![(PathBuf::from("/"), root)];
+            while let Some((current, TreesModel { tree, .. })) = bfs.pop() {
+                for SubtreeModel { path, contents_type, sha, .. } in tree {
+                    match contents_type {
+                        ContentsType::Tree => {
+                            let absolute = current.join(path);
+                            let subtree = client.trees(&sha).await?;
+                            bfs.push((absolute, subtree));
+                        }
+                        ContentsType::Blob => {
+                            let absolute = current.join(path);
+                            let blob = client.blobs(&sha).await?;
+                            yield GitHubBlob::from_model(absolute, blob)
+                        }
+                    }
+                }
+            }
+        }
     }
 }
 
