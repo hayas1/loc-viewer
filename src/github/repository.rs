@@ -47,20 +47,15 @@ impl GitHubRepository {
         let sha = "master";
 
         stream! {
-            let root = client.trees(sha).await?;
+            let root = client.trees(sha, true).await?;
             let mut bfs = vec![(PathBuf::from("/"), root)];
-            while let Some((current, TreesModel { tree, .. })) = bfs.pop() {
-                for SubtreeModel { path, contents_type, sha, .. } in tree {
+            while let Some((_current, TreesModel { tree, .. })) = bfs.pop() {
+                for SubtreeModel { path, contents_type, .. } in tree {
                     match contents_type {
-                        ContentsType::Tree => {
-                            let absolute = current.join(path);
-                            let subtree = client.trees(&sha).await?;
-                            bfs.push((absolute, subtree));
-                        }
+                        ContentsType::Tree => {}
                         ContentsType::Blob => {
-                            let absolute = current.join(path);
-                            let blob = client.blobs(&sha).await?;
-                            yield GitHubBlob::from_model(absolute, blob)
+                            let raw = client.raw(&sha, &path).await?; // TODO join
+                            yield Ok(GitHubBlob::new(PathBuf::from(&path), raw))
                         }
                     }
                 }
