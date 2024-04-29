@@ -48,7 +48,7 @@ impl<'a> BlobsModelDecoder<'a> {
     pub fn decode_base64(&self) -> Result<String> {
         let mut encoded = self.model.content.as_bytes().to_owned();
         encoded.retain(|b| !b.is_ascii_whitespace());
-        let s = BASE64_STANDARD.decode(encoded)?;
-        Ok(String::from_utf8_lossy(&s).into_owned())
+        let decoded = BASE64_STANDARD.decode(encoded)?;
+        Ok(String::from_utf8_lossy(&decoded).into_owned())
     }
 }
