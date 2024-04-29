@@ -2,7 +2,7 @@ use std::path::PathBuf;
 
 use anyhow::{anyhow, ensure, Result};
 use async_stream::stream;
-use futures::Stream;
+use futures::{stream::unfold, Stream};
 use url::Url;
 
 use crate::{
@@ -46,22 +46,19 @@ impl GitHubRepository {
         let client = GitHubApiClient::new(self.clone()); // TODO lifetime
         let sha = "master";
 
-        stream! {
-            let root = client.trees(sha, true).await?;
-            let mut bfs = vec![(PathBuf::from("/"), root)];
-            while let Some((_current, TreesModel { tree, .. })) = bfs.pop() {
-                for SubtreeModel { path, contents_type, .. } in tree {
-                    match contents_type {
-                        ContentsType::Tree => {}
-                        ContentsType::Blob => {
-                            let raw = client.raw(&sha, &path).await?; // TODO join
-                            yield Ok(GitHubBlob::new(PathBuf::from(&path), raw))
-                        }
-                        ContentsType::Commit => {}
-                    }
-                }
+        let TreesModel { tree, .. } = client.trees(sha, true).await.unwrap();
+        let blob_paths = tree.into_iter().filter_map(|SubtreeModel { path, contents_type, .. }| match contents_type {
+            ContentsType::Tree => None,
+            ContentsType::Blob => Some(path),
+            ContentsType::Commit => None,
+        });
+        unfold((blob_paths, sha, client), |(mut paths, sha, client)| async move {
+            let path = paths.next()?;
+            match client.raw(&sha, &path).await {
+                Ok(raw) => Some((Ok(GitHubBlob::new(PathBuf::from(&path), raw)), (paths, sha, client))),
+                Err(err) => Some((Err(anyhow!(err)), (paths, sha, client))),
             }
-        }
+        })
     }
 
     pub async fn get_statistics(&self) -> Result<Statistics> {
