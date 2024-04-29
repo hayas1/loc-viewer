@@ -13,7 +13,7 @@ use crate::{
     },
 };
 
-use super::blob::GitHubBlob;
+use super::{blob::GitHubBlob, statistics::Statistics};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct GitHubRepository {
@@ -61,6 +61,10 @@ impl GitHubRepository {
                 }
             }
         }
+    }
+
+    pub async fn get_statistics(&self) -> Result<Statistics> {
+        Statistics::get(self.clone()).await // TODO lifetime
     }
 }
 
