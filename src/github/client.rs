@@ -5,15 +5,15 @@ use url::Url;
 
 use super::{models::TreesModel, repository::GitHubRepository};
 
-pub struct GitHubApiClient {
-    pub repository: GitHubRepository,
+pub struct GitHubApiClient<'a> {
+    pub repository: &'a GitHubRepository,
 }
 
-impl GitHubApiClient {
+impl<'a> GitHubApiClient<'a> {
     pub const API_ORIGIN: &'static str = "https://api.github.com";
     pub const RAW_ORIGIN: &'static str = "https://raw.githubusercontent.com";
 
-    pub fn new(repository: GitHubRepository) -> Self {
+    pub fn new(repository: &'a GitHubRepository) -> Self {
         Self { repository }
     }
 

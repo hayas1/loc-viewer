@@ -42,7 +42,7 @@ impl GitHubRepository {
     }
 
     pub async fn walk(&self) -> impl Stream<Item = Result<GitHubBlob>> + '_ {
-        let client = GitHubApiClient::new(self.clone()); // TODO lifetime
+        let client = GitHubApiClient::new(self); // TODO lifetime
         let sha = "master";
 
         let TreesModel { tree, .. } = client.trees(sha, true).await.unwrap();
@@ -51,7 +51,7 @@ impl GitHubRepository {
             .filter_map(move |SubtreeModel { path, contents_type, .. }| async move {
                 match contents_type {
                     ContentsType::Tree => None,
-                    ContentsType::Blob => Some(GitHubBlob::repo_path(self.clone(), PathBuf::from(&path), sha)),
+                    ContentsType::Blob => Some(GitHubBlob::repo_path(self, PathBuf::from(&path), sha)),
                     ContentsType::Commit => None,
                 }
             })

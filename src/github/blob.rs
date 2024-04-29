@@ -19,8 +19,8 @@ impl GitHubBlob {
         Self { path, content }
     }
 
-    pub async fn repo_path(repository: GitHubRepository, path: PathBuf, sha: &str) -> Result<Self> {
-        let client = GitHubApiClient::new(repository.clone());
+    pub async fn repo_path(repository: &GitHubRepository, path: PathBuf, sha: &str) -> Result<Self> {
+        let client = GitHubApiClient::new(repository);
         let raw = client.raw(sha, &path).await?;
         Ok(Self::new(path, raw))
     }
