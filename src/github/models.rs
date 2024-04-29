@@ -18,7 +18,8 @@ pub struct SubtreeModel {
     pub sha: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub size: Option<u64>,
-    pub url: Url,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub url: Option<Url>,
 }
 
 #[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize)]
@@ -26,7 +27,8 @@ pub struct SubtreeModel {
 pub enum ContentsType {
     Tree,
     Blob,
-    // TODO: symlink, submodules ?
+    Commit,
+    // TODO: symlink ?
 }
 
 #[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize)]

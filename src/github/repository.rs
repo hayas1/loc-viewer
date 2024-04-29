@@ -57,6 +57,7 @@ impl GitHubRepository {
                             let raw = client.raw(&sha, &path).await?; // TODO join
                             yield Ok(GitHubBlob::new(PathBuf::from(&path), raw))
                         }
+                        ContentsType::Commit => {}
                     }
                 }
             }

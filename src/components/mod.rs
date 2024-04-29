@@ -6,6 +6,7 @@ use crate::github::repository::GitHubRepository;
 #[function_component(App)]
 pub fn app() -> Html {
     let repository = GitHubRepository::from_url(&Url::parse("https://github.com/hayas1/loc-viewer").unwrap()).unwrap();
+    // let repository = GitHubRepository::from_url(&Url::parse("https://github.com/rust-lang/rust").unwrap()).unwrap();
 
     let contents = use_state(|| None);
     {
