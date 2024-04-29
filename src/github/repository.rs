@@ -69,6 +69,7 @@ impl GitHubRepository {
     }
 
     pub async fn walk(&self) -> impl Stream<Item = Result<GitHubBlob>> + '_ {
+        // TODO zip or tar.gz
         let sha = "master";
 
         let TreesModel { tree, .. } = self.trees(sha, true).await.unwrap();
