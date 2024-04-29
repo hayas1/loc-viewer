@@ -1,31 +1,69 @@
 use url::Url;
 use yew::prelude::*;
+use yew_autoprops::autoprops;
 
 use crate::github::repository::GitHubRepository;
 
 #[function_component(App)]
-pub fn app() -> Html {
+pub fn app() -> HtmlResult {
     let repository = GitHubRepository::from_url(&Url::parse("https://github.com/hayas1/loc-viewer").unwrap()).unwrap();
     // let repository = GitHubRepository::from_url(&Url::parse("https://github.com/rust-lang/rust").unwrap()).unwrap();
 
-    let contents = use_state(|| None);
+    Ok(html! {
+        <Table repository={repository} />
+    })
+}
+
+#[autoprops]
+#[function_component(Table)]
+pub fn table(repository: &GitHubRepository) -> HtmlResult {
+    let repository = repository.clone(); // TODO props without ref ?
+    let result = use_state(|| None);
     {
-        let contents = contents.clone();
+        let result = result.clone();
         use_effect_with((), move |_| {
             wasm_bindgen_futures::spawn_local(async move {
-                let languages = repository.get_statistics().await.unwrap();
-                contents.set(Some(languages));
+                let statistics = repository.get_statistics().await;
+                result.set(Some(statistics));
             })
         });
     }
 
-    html! {
-        <>
-            <h1>{ "Hello World" }</h1>
-            <p>{ match &(*contents) {
-                Some(contents) => format!("contents: {:?}", contents),
-                None => format!("loading..."),
-             } }</p>
-        </>
-    }
+    Ok(html! {
+        match &(*result) {
+            Some(Ok(statistics)) => html! {
+                <table class="table-auto">
+                    <thead>
+                        <tr>
+                            <th>{ "Language" }</th>
+                            <th>{ "Files" }</th>
+                            <th>{ "Lines" }</th>
+                            <th>{ "Code" }</th>
+                            <th>{ "Comments" }</th>
+                            <th>{ "Blanks" }</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {
+                            for statistics.languages.iter().map(|(language_type, language)| {
+                                html! {
+                                    <tr>
+                                        <td>{ language_type.to_string() }</td>
+                                        <td>{ language.reports.len() }</td>
+                                        <td>{ language.lines() }</td>
+                                        <td>{ language.code }</td>
+                                        <td>{ language.comments }</td>
+                                        <td>{ language.blanks }</td>
+                                        // <td>{ language.total() }</td>
+                                   </tr>
+                                }
+                            })
+                        }
+                    </tbody>
+                </table>
+            },
+            Some(Err(err)) => html! { format!("error occurred: {err:?}") },
+            None => html! { format!("loading...") },
+        }
+    })
 }
