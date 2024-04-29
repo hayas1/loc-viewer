@@ -1,15 +1,12 @@
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 use anyhow::{anyhow, ensure, Result};
-use futures::{stream, Stream, StreamExt};
+use futures::{stream, Stream, StreamExt, TryStreamExt};
 use url::Url;
 
 use crate::{
     error::InvalidRepositoryUrl,
-    github::{
-        client::GitHubApiClient,
-        models::{ContentsType, SubtreeModel, TreesModel},
-    },
+    github::models::{ContentsType, SubtreeModel, TreesModel},
 };
 
 use super::{blob::GitHubBlob, statistics::Statistics};
@@ -22,6 +19,8 @@ pub struct GitHubRepository {
 
 impl GitHubRepository {
     pub const ORIGIN: &'static str = "https://github.com";
+    pub const API_ORIGIN: &'static str = "https://api.github.com";
+    pub const RAW_ORIGIN: &'static str = "https://raw.githubusercontent.com";
 
     pub fn new(owner: &str, repo: &str) -> Self {
         Self { owner: owner.to_string(), repo: repo.to_string() }
@@ -41,21 +40,50 @@ impl GitHubRepository {
         Ok(url)
     }
 
+    pub fn api_endpoint(&self, path: &str) -> Result<Url> {
+        let mut url = Url::parse(Self::API_ORIGIN)?;
+        url.set_path(path);
+        Ok(url)
+    }
+
+    pub fn raw_endpoint(&self, path: &str) -> Result<Url> {
+        let mut url = Url::parse(Self::RAW_ORIGIN)?;
+        url.set_path(path);
+        Ok(url)
+    }
+
+    pub async fn trees(&self, sha: &str, recursive: bool) -> Result<TreesModel> {
+        let Self { owner, repo } = &self;
+        let path = format!("/repos/{owner}/{repo}/git/trees/{sha}");
+        let request = gloo::net::http::Request::get(self.api_endpoint(&path)?.as_str())
+            .query([("recursive", recursive.to_string())]);
+        Ok(request.send().await?.json().await?)
+    }
+
+    pub async fn raw<A: AsRef<Path>>(&self, sha: &str, path: A) -> Result<String> {
+        let Self { owner, repo } = &self;
+        let path = path.as_ref().to_str().ok_or_else(|| anyhow!("// TODO error handling"))?;
+        let path = format!("/{owner}/{repo}/{sha}/{path}");
+        let request = gloo::net::http::Request::get(self.raw_endpoint(&path)?.as_str());
+        Ok(request.send().await?.text().await?)
+    }
+
     pub async fn walk(&self) -> impl Stream<Item = Result<GitHubBlob>> + '_ {
-        let client = GitHubApiClient::new(self); // TODO lifetime
         let sha = "master";
 
-        let TreesModel { tree, .. } = client.trees(sha, true).await.unwrap();
+        let TreesModel { tree, .. } = self.trees(sha, true).await.unwrap();
+        let paths = tree.into_iter().filter_map(|SubtreeModel { path, contents_type, .. }| match contents_type {
+            ContentsType::Tree => None,
+            ContentsType::Blob => Some(PathBuf::from(path)),
+            ContentsType::Commit => None,
+        });
 
-        stream::iter(tree.into_iter())
-            .filter_map(move |SubtreeModel { path, contents_type, .. }| async move {
-                match contents_type {
-                    ContentsType::Tree => None,
-                    ContentsType::Blob => Some(GitHubBlob::repo_path(self, PathBuf::from(&path), sha)),
-                    ContentsType::Commit => None,
-                }
-            })
+        stream::iter(paths.clone())
+            .map(|path| self.raw(sha, path))
             .buffered(32) // num_cpus::get() returns 1
+            .zip(stream::iter(paths))
+            .map(|(raw, path)| Ok(GitHubBlob::new(path, raw?)))
+            .map_ok(|blob| blob)
     }
 
     pub async fn get_statistics(&self) -> Result<Statistics> {

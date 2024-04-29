@@ -2,11 +2,7 @@ use anyhow::Result;
 use base64::prelude::*;
 use std::path::PathBuf;
 
-use super::{
-    client::GitHubApiClient,
-    models::{BlobsModel, EncodingType},
-    repository::GitHubRepository,
-};
+use super::models::{BlobsModel, EncodingType};
 
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct GitHubBlob {
@@ -17,12 +13,6 @@ pub struct GitHubBlob {
 impl GitHubBlob {
     pub fn new(path: PathBuf, content: String) -> Self {
         Self { path, content }
-    }
-
-    pub async fn repo_path(repository: &GitHubRepository, path: PathBuf, sha: &str) -> Result<Self> {
-        let client = GitHubApiClient::new(repository);
-        let raw = client.raw(sha, &path).await?;
-        Ok(Self::new(path, raw))
     }
 
     pub fn from_model(path: PathBuf, model: BlobsModel) -> Result<Self> {
