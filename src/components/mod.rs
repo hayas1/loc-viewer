@@ -1,6 +1,7 @@
 use std::sync::Arc;
 
 use url::Url;
+use web_sys::HtmlInputElement;
 use yew::prelude::*;
 use yew_autoprops::autoprops;
 
@@ -8,12 +9,47 @@ use crate::github::repository::GitHubRepository;
 
 #[function_component(App)]
 pub fn app() -> HtmlResult {
-    let repository = GitHubRepository::from_url(&Url::parse("https://github.com/hayas1/loc-viewer").unwrap()).unwrap();
-    // let repository = GitHubRepository::from_url(&Url::parse("https://github.com/rust-lang/rust").unwrap()).unwrap();
-    // let repository = GitHubRepository::from_url(&Url::parse("https://github.com/XAMPPRocky/tokei").unwrap()).unwrap();
+    let repository_input = use_node_ref();
+    let input_handle = use_state(|| "https://github.com/hayas1/loc-viewer".to_string());
+    let repository_handle = use_state(|| GitHubRepository::from_url(&Url::parse(&*input_handle.clone()).unwrap()));
+    let repository = Arc::new((&*(repository_handle.clone()).clone()).as_ref().unwrap().clone());
 
+    let on_change = {
+        let repository_input = repository_input.clone();
+        let input_handle = input_handle.clone();
+        Callback::from(move |_| {
+            if let Some(input) = repository_input.cast::<HtmlInputElement>() {
+                repository_handle.set(GitHubRepository::from_url(&Url::parse(&input.value()).unwrap()));
+                input_handle.set(input.value());
+            }
+        })
+    };
+
+    let input_id = "repository-input";
     Ok(html! {
-        <Table repository={Arc::new(repository)} />
+        <div>
+            // <form class="w-full">
+                <div class="md:flex md:items-center mb-6">
+                    <div class="">
+                        <label for={input_id} class="block text-gray-700 text-sm font-bold mb-2">
+                            { "Repository:" }
+                        </label>
+                    </div>
+                    <div class="w-full">
+                        <input ref={repository_input}
+                            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                            onchange={on_change}
+                            id={input_id}
+                            type="text"
+                            value={(*input_handle).clone()}
+                        />
+                    </div>
+                </div>
+            // </form>
+            <div class="w-full">
+                <Table repository={repository} />
+            </div>
+        </div>
     })
 }
 
@@ -21,10 +57,12 @@ pub fn app() -> HtmlResult {
 #[function_component(Table)]
 pub fn table(repository: &Arc<GitHubRepository>) -> HtmlResult {
     let repository = repository.clone();
+    let url = repository.clone().to_url().unwrap();
     let result = use_state(|| None);
     {
         let result = result.clone();
-        use_effect_with((), move |_| {
+        let repository = repository.clone();
+        use_effect_with(repository.clone(), move |_| {
             wasm_bindgen_futures::spawn_local(async move {
                 let statistics = repository.get_statistics().await;
                 result.set(Some(statistics));
@@ -32,7 +70,7 @@ pub fn table(repository: &Arc<GitHubRepository>) -> HtmlResult {
         });
     }
 
-    Ok(html! {
+    let a: HtmlResult = Ok(html! {
         match &(*result) {
             Some(Ok(statistics)) => html! {
                 <table class="table-auto">
@@ -68,5 +106,12 @@ pub fn table(repository: &Arc<GitHubRepository>) -> HtmlResult {
             Some(Err(err)) => html! { format!("error occurred: {err:?}") },
             None => html! { format!("loading...") },
         }
+    });
+
+    Ok(html! {
+        <div>
+            <div>{ url.as_str() }</div>
+            <div>{ a? }</div>
+        </div>
     })
 }

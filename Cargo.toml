@@ -9,6 +9,7 @@ edition = "2021"
 yew = { version = "0.21", features = ["csr"] }
 yew-autoprops = "0.4"
 gloo = "0.11"
+web-sys = "0.3"
 wasm-bindgen-futures = "0.4"
 
 tokei = "12.1"
