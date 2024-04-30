@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use url::Url;
 use yew::prelude::*;
 use yew_autoprops::autoprops;
@@ -8,16 +10,17 @@ use crate::github::repository::GitHubRepository;
 pub fn app() -> HtmlResult {
     let repository = GitHubRepository::from_url(&Url::parse("https://github.com/hayas1/loc-viewer").unwrap()).unwrap();
     // let repository = GitHubRepository::from_url(&Url::parse("https://github.com/rust-lang/rust").unwrap()).unwrap();
+    // let repository = GitHubRepository::from_url(&Url::parse("https://github.com/XAMPPRocky/tokei").unwrap()).unwrap();
 
     Ok(html! {
-        <Table repository={repository} />
+        <Table repository={Arc::new(repository)} />
     })
 }
 
 #[autoprops]
 #[function_component(Table)]
-pub fn table(repository: &GitHubRepository) -> HtmlResult {
-    let repository = repository.clone(); // TODO props without ref ?
+pub fn table(repository: &Arc<GitHubRepository>) -> HtmlResult {
+    let repository = repository.clone();
     let result = use_state(|| None);
     {
         let result = result.clone();
