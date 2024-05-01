@@ -43,7 +43,8 @@ impl Statistics {
     pub async fn walk(repository: &GitHubRepository, config: &Config) -> Result<Languages> {
         let mut languages: BTreeMap<LanguageType, Language> = BTreeMap::new();
 
-        let stream = repository.walk().await;
+        let sha = repository.repository().await.unwrap().default_branch.unwrap_or("master".to_string());
+        let stream = repository.walk(&sha).await;
         pin_mut!(stream); // needed for iteration
         while let Some(value) = stream.next().await {
             let blob = value?;

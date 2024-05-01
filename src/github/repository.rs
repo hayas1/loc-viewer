@@ -77,11 +77,9 @@ impl GitHubRepository {
         Ok(request.send().await?.text().await?)
     }
 
-    pub async fn walk(&self) -> impl Stream<Item = Result<GitHubBlob>> + '_ {
+    pub async fn walk<'a>(&'a self, sha: &'a str) -> impl Stream<Item = Result<GitHubBlob>> + 'a {
         // TODO zip or tar.gz
-        let sha = "master";
-
-        let TreesModel { tree, .. } = self.trees(sha, true).await.unwrap();
+        let TreesModel { tree, .. } = self.trees(&sha, true).await.unwrap();
         let paths = tree.into_iter().filter_map(|SubtreeModel { path, contents_type, .. }| match contents_type {
             ContentsType::Tree => None,
             ContentsType::Blob => Some(PathBuf::from(path)),
@@ -89,7 +87,7 @@ impl GitHubRepository {
         });
 
         stream::iter(paths.clone())
-            .map(|path| self.raw(sha, path))
+            .map(move |path| self.raw(&sha, path))
             .buffered(32) // num_cpus::get() returns 1
             .zip(stream::iter(paths))
             .map(|(raw, path)| Ok(GitHubBlob::new(path, raw?)))
