@@ -28,7 +28,7 @@ jobs:
     - name: Release test
       run: cargo test --release
     - name: Build App
-      run: yes | PUBLIC_URL="." ./scripts/prod-build.sh
+      run: yes | PUBLIC_URL="/${{ github.event.repository.name }}" ./scripts/prod-build.sh
     - name: Overwrite 404.html for BrowserRouter
       run: cp target/public/index.html target/public/404.html
 
