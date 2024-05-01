@@ -1,10 +1,14 @@
 use yew::prelude::*;
 use yew_router::prelude::*;
 
+use super::{statistics::Statistics, App};
+
 #[derive(Clone, Routable, PartialEq)]
 enum Route {
     #[at("/")]
     Home,
+    #[at("/statistics/:host/:owner/:repo")]
+    Statistics { host: String, owner: String, repo: String },
     #[not_found]
     #[at("/404")]
     NotFound,
@@ -12,7 +16,8 @@ enum Route {
 impl Route {
     pub fn switch(self) -> Html {
         match self {
-            Route::Home => html! { <crate::components::App/> },
+            Route::Home => html! { <App/> },
+            Route::Statistics { host, owner, repo } => html! { <Statistics {host} {owner} {repo}/> },
             Route::NotFound => html! { <NotFound/> },
         }
     }
