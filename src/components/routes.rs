@@ -21,7 +21,7 @@ impl Route {
 #[function_component(Main)]
 pub fn main() -> Html {
     html! {
-        <BrowserRouter>
+        <BrowserRouter basename="/loc-viewer/"> // TODO do not hard code basename
             <Switch<Route> render={Route::switch} />
         </BrowserRouter>
     }
