@@ -60,7 +60,7 @@ pub fn table(repository: &Arc<GitHubRepository>) -> HtmlResult {
         let (result, repository) = (result.clone(), repository.clone());
         use_effect_with(repository.clone(), move |_| {
             wasm_bindgen_futures::spawn_local(async move {
-                let statistics = repository.get_statistics().await;
+                let statistics = repository.get_statistics(&Default::default()).await;
                 result.set(Some(statistics));
             })
         });

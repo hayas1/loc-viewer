@@ -1,8 +1,8 @@
-use std::collections::{btree_map::Entry, BTreeMap};
+use std::collections::BTreeMap;
 
 use anyhow::Result;
 use futures::{pin_mut, StreamExt};
-use tokei::{Config, Language, LanguageType, Languages, Report};
+use tokei::{Language, LanguageType, Languages, Report};
 
 use super::repository::GitHubRepository;
 
@@ -12,12 +12,12 @@ pub struct Statistics {
     pub languages: Languages,
 }
 impl Statistics {
-    pub async fn get(repository: GitHubRepository) -> Result<Self> {
-        let languages = Self::get_statistics(&repository, &Config::default()).await?;
+    pub async fn get(repository: GitHubRepository, config: &tokei::Config) -> Result<Self> {
+        let languages = Self::get_statistics(&repository, config).await?;
         Ok(Self { repository, languages })
     }
 
-    pub async fn get_statistics(repository: &GitHubRepository, config: &Config) -> Result<Languages> {
+    pub async fn get_statistics(repository: &GitHubRepository, config: &tokei::Config) -> Result<Languages> {
         let mut languages = Self::walk(repository, config).await?;
         languages.iter_mut().for_each(|(_, language)| language.total());
         Ok(languages)
@@ -31,7 +31,7 @@ impl Statistics {
         languages
     }
 
-    pub async fn walk(repository: &GitHubRepository, config: &Config) -> Result<Languages> {
+    pub async fn walk(repository: &GitHubRepository, config: &tokei::Config) -> Result<Languages> {
         let mut languages: BTreeMap<LanguageType, Language> = BTreeMap::new();
 
         let sha = repository.repository().await.unwrap().default_branch.unwrap_or("master".to_string());

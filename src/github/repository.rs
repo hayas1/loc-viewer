@@ -94,8 +94,8 @@ impl GitHubRepository {
             .map_ok(|blob| blob)
     }
 
-    pub async fn get_statistics(&self) -> Result<Statistics> {
-        Statistics::get(self.clone()).await // TODO lifetime
+    pub async fn get_statistics(&self, config: &tokei::Config) -> Result<Statistics> {
+        Statistics::get(self.clone(), config).await // TODO lifetime
     }
 }
 
