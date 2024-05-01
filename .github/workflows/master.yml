@@ -29,6 +29,8 @@ jobs:
       run: cargo test --release
     - name: Build App
       run: yes | PUBLIC_URL="." ./scripts/prod-build.sh
+    - name: Overwrite 404.html for BrowserRouter
+      run: cp target/public/index.html target/public/404.html
 
     - name: Upload artifact
       uses: actions/upload-pages-artifact@v3
