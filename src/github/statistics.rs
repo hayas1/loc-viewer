@@ -27,16 +27,7 @@ impl Statistics {
     /// https://github.com/XAMPPRocky/tokei/blob/v12.1.2/src/language/languages.rs#L46-L61
     pub fn as_languages(map: BTreeMap<LanguageType, Language>) -> Languages {
         let mut languages = Languages::new();
-        for (name, input_language) in map {
-            match languages.entry(name) {
-                Entry::Occupied(mut entry) => {
-                    *entry.get_mut() += input_language;
-                }
-                Entry::Vacant(entry) => {
-                    entry.insert(input_language);
-                }
-            }
-        }
+        languages.extend(map);
         languages
     }
 
