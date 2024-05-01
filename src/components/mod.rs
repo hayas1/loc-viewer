@@ -1,3 +1,5 @@
+pub mod routes;
+
 use std::sync::Arc;
 
 use url::Url;

@@ -1,5 +1,5 @@
-use loc_viwer::components::App;
+use loc_viwer::components::routes::Main;
 
 fn main() {
-    yew::Renderer::<App>::new().render();
+    yew::Renderer::<Main>::new().render();
 }
