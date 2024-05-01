@@ -11,15 +11,13 @@ use crate::github::repository::GitHubRepository;
 pub fn app() -> HtmlResult {
     let repository_input = use_node_ref();
     let input_handle = use_state(|| "https://github.com/hayas1/loc-viewer".to_string());
-    let repository_handle = use_state(|| GitHubRepository::from_url(&Url::parse(&*input_handle.clone()).unwrap()));
-    let repository = Arc::new((&*(repository_handle.clone()).clone()).as_ref().unwrap().clone());
+    let repository = Arc::new(GitHubRepository::from_url(&Url::parse(&*input_handle.clone()).unwrap()).unwrap());
 
     let on_change = {
         let repository_input = repository_input.clone();
         let input_handle = input_handle.clone();
         Callback::from(move |_| {
             if let Some(input) = repository_input.cast::<HtmlInputElement>() {
-                repository_handle.set(GitHubRepository::from_url(&Url::parse(&input.value()).unwrap()));
                 input_handle.set(input.value());
             }
         })
@@ -57,11 +55,9 @@ pub fn app() -> HtmlResult {
 #[function_component(Table)]
 pub fn table(repository: &Arc<GitHubRepository>) -> HtmlResult {
     let repository = repository.clone();
-    let url = repository.clone().to_url().unwrap();
     let result = use_state(|| None);
     {
-        let result = result.clone();
-        let repository = repository.clone();
+        let (result, repository) = (result.clone(), repository.clone());
         use_effect_with(repository.clone(), move |_| {
             wasm_bindgen_futures::spawn_local(async move {
                 let statistics = repository.get_statistics().await;
@@ -70,7 +66,7 @@ pub fn table(repository: &Arc<GitHubRepository>) -> HtmlResult {
         });
     }
 
-    let a: HtmlResult = Ok(html! {
+    Ok(html! {
         match &(*result) {
             Some(Ok(statistics)) => html! {
                 <table class="table-auto">
@@ -106,12 +102,5 @@ pub fn table(repository: &Arc<GitHubRepository>) -> HtmlResult {
             Some(Err(err)) => html! { format!("error occurred: {err:?}") },
             None => html! { format!("loading...") },
         }
-    });
-
-    Ok(html! {
-        <div>
-            <div>{ url.as_str() }</div>
-            <div>{ a? }</div>
-        </div>
     })
 }
