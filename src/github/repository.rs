@@ -2,6 +2,7 @@ use std::path::{Path, PathBuf};
 
 use anyhow::{anyhow, ensure, Result};
 use futures::{stream, Stream, StreamExt, TryStreamExt};
+use octocrab::models;
 use url::Url;
 
 use crate::{
@@ -58,6 +59,13 @@ impl GitHubRepository {
         let path = format!("/repos/{owner}/{repo}/git/trees/{sha}");
         let request = gloo::net::http::Request::get(self.api_endpoint(&path)?.as_str())
             .query([("recursive", recursive.to_string())]);
+        Ok(request.send().await?.json().await?)
+    }
+
+    pub async fn repository(&self) -> Result<models::Repository> {
+        let Self { owner, repo } = &self;
+        let path = format!("/repos/{owner}/{repo}");
+        let request = gloo::net::http::Request::get(self.api_endpoint(&path)?.as_str());
         Ok(request.send().await?.json().await?)
     }
 
