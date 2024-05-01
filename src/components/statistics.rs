@@ -1,16 +1,22 @@
-use std::sync::Arc;
+use std::{collections::HashMap, sync::Arc};
 
 use yew::prelude::*;
 use yew_autoprops::autoprops;
+use yew_router::hooks::use_location;
 
 use crate::github::repository::GitHubRepository;
 
 #[autoprops]
 #[function_component(Statistics)]
 pub fn statistics(host: &String, owner: &String, repo: &String) -> Html {
+    let location = use_location().unwrap();
+    let query = location.query::<HashMap<String, String>>().unwrap();
     let repository = Arc::new(GitHubRepository::new(owner, repo));
     html! {
-        <Table repository={repository}/>
+        <div>
+            <p>{ format!("{:?}", query) }</p>
+            <Table repository={repository}/>
+        </div>
     }
 }
 
