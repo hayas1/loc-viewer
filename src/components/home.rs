@@ -1,11 +1,13 @@
-use anyhow::anyhow;
 use url::Url;
 use web_sys::HtmlInputElement;
 use yew::prelude::*;
 use yew_router::hooks::use_navigator;
 
 use super::routes::Route;
-use crate::{error::Result, github::repository::GitHubRepository};
+use crate::{
+    error::{render::Unreachable, Result},
+    github::repository::GitHubRepository,
+};
 
 #[function_component(Home)]
 pub fn home() -> HtmlResult {
@@ -17,7 +19,9 @@ pub fn home() -> HtmlResult {
         let repository_input = repository_input.clone();
         Callback::from(move |_| {
             let route: Result<Route> = (|| {
-                let input = repository_input.cast::<HtmlInputElement>().ok_or_else(|| anyhow!("DOM changed"))?;
+                let input = repository_input
+                    .cast::<HtmlInputElement>()
+                    .ok_or_else(|| anyhow::anyhow!(Unreachable::DomMaybeChanged))?;
                 let value = input.value();
                 let repository = if value.is_empty() {
                     GitHubRepository::from_url(&Url::parse(example).map_err(anyhow::Error::from)?)?

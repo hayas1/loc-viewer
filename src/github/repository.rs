@@ -1,13 +1,15 @@
 use std::path::{Path, PathBuf};
 
-use anyhow::anyhow;
 use futures::{stream, Stream, StreamExt, TryStreamExt};
 use gloo::net::http::Request;
 use octocrab::models;
 use url::Url;
 
 use crate::{
-    error::{InvalidRepositoryUrl, Result},
+    error::{
+        repository::{Unreachable, UrlParseError},
+        Result,
+    },
     github::models::{ContentsType, SubtreeModel, TreesModel},
 };
 
@@ -34,11 +36,11 @@ impl GitHubRepository {
 
     pub fn from_url(url: &Url) -> Result<Self> {
         if url.origin().unicode_serialization() != Self::ORIGIN {
-            Err(anyhow!(InvalidRepositoryUrl::CannotBeBase))?
+            Err(anyhow::anyhow!(UrlParseError::InvalidHost))?
         }
-        let mut path_segments = url.path_segments().ok_or_else(|| anyhow!(InvalidRepositoryUrl::CannotBeBase))?;
-        let owner = path_segments.next().ok_or_else(|| anyhow!(InvalidRepositoryUrl::CannotFindOwner))?;
-        let repo = path_segments.next().ok_or_else(|| anyhow!(InvalidRepositoryUrl::CannotFindRepo))?;
+        let mut path_segments = url.path_segments().ok_or_else(|| anyhow::anyhow!(UrlParseError::Unspecified))?;
+        let owner = path_segments.next().ok_or_else(|| anyhow::anyhow!(UrlParseError::UnspecifiedOwner))?;
+        let repo = path_segments.next().ok_or_else(|| anyhow::anyhow!(UrlParseError::UnspecifiedRepository))?;
         // TODO rest path
         Ok(Self::new(owner, repo))
     }
@@ -77,7 +79,7 @@ impl GitHubRepository {
 
     pub async fn raw<A: AsRef<Path>>(&self, sha: &str, path: A) -> Result<String> {
         let Self { owner, repo } = &self;
-        let path = path.as_ref().to_str().ok_or_else(|| anyhow!("// TODO error handling"))?;
+        let path = path.as_ref().to_str().ok_or_else(|| anyhow::anyhow!(Unreachable::UnimplementedString))?;
         let path = format!("/{owner}/{repo}/{sha}/{path}");
         let request = Request::get(self.raw_endpoint(&path)?.as_str());
         Ok(request.send().await.map_err(anyhow::Error::from)?.text().await.map_err(anyhow::Error::from)?)
