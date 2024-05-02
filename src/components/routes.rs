@@ -1,7 +1,7 @@
 use yew::prelude::*;
 use yew_router::prelude::*;
 
-use super::{statistics::Statistics, App};
+use super::{home::Home, statistics::Statistics};
 
 #[derive(Clone, Routable, PartialEq)]
 enum Route {
@@ -16,7 +16,7 @@ enum Route {
 impl Route {
     pub fn switch(self) -> Html {
         match self {
-            Route::Home => html! { <App/> },
+            Route::Home => html! { <Home/> },
             Route::Statistics { host, owner, repo } => html! { <Statistics {host} {owner} {repo}/> },
             Route::NotFound => html! { <NotFound/> },
         }
