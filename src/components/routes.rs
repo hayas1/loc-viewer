@@ -7,7 +7,7 @@ use super::{statistics::Statistics, App};
 enum Route {
     #[at("/")]
     Home,
-    #[at("/statistics/:host/:owner/:repo")]
+    #[at("/toukei/:host/:owner/:repo")]
     Statistics { host: String, owner: String, repo: String },
     #[not_found]
     #[at("/404")]
