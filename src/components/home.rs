@@ -1,52 +1,50 @@
-use std::sync::Arc;
-
 use url::Url;
 use web_sys::HtmlInputElement;
 use yew::prelude::*;
+use yew_router::hooks::use_navigator;
 
-use super::statistics::Table;
+use super::routes::Route;
 use crate::github::repository::GitHubRepository;
 
 #[function_component(Home)]
 pub fn home() -> HtmlResult {
+    let example = "https://github.com/hayas1/loc-viewer";
     let repository_input = use_node_ref();
-    let input_handle = use_state(|| "https://github.com/hayas1/loc-viewer".to_string());
-    let repository = Arc::new(GitHubRepository::from_url(&Url::parse(&*input_handle.clone()).unwrap()).unwrap());
 
-    let on_change = {
+    let navigator = use_navigator().unwrap();
+    let on_click = {
         let repository_input = repository_input.clone();
-        let input_handle = input_handle.clone();
         Callback::from(move |_| {
-            if let Some(input) = repository_input.cast::<HtmlInputElement>() {
-                input_handle.set(input.value());
-            }
+            let Some(input) = repository_input.cast::<HtmlInputElement>() else {
+                return navigator.push(&Route::NotFound);
+            };
+            let value = input.value();
+            let repository = if value.is_empty() {
+                GitHubRepository::from_url(&Url::parse(example).unwrap()).unwrap()
+            } else {
+                GitHubRepository::from_url(&Url::parse(&value).unwrap()).unwrap()
+            };
+            let (host, GitHubRepository { owner, repo }) = (repository.host(), repository);
+            navigator.push(&Route::Statistics { host, owner, repo })
         })
     };
 
-    let input_id = "repository-input";
     Ok(html! {
-        <div>
-            // <form class="w-full">
-                <div class="md:flex md:items-center mb-6">
-                    <div class="">
-                        <label for={input_id} class="block text-gray-700 text-sm font-bold mb-2">
-                            { "Repository:" }
-                        </label>
-                    </div>
-                    <div class="w-full">
-                        <input ref={repository_input}
-                            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                            onchange={on_change}
-                            id={input_id}
-                            type="text"
-                            value={(*input_handle).clone()}
-                        />
-                    </div>
-                </div>
-            // </form>
-            <div class="w-full">
-                <Table repository={repository} />
-            </div>
+        <div class="w-full max-w-sm">
+            <div class="flex items-center border-b border-teal-500 py-2">
+                <input ref={repository_input}
+                    class="appearance-none bg-transparent border-none w-full text-gray-700 mr-3 py-1 px-2 leading-tight focus:outline-none"
+                    type="text"
+                    placeholder={example}
+                    aria-label="Repository"/>
+                <button
+                    class="flex-shrink-0 bg-teal-500 hover:bg-teal-700 border-teal-500 hover:border-teal-700 text-sm border-4 text-white py-1 px-2 rounded"
+                    onclick={on_click}
+                    type="button"
+                >
+                    { "Toukei" }
+                </button>
+          </div>
         </div>
     })
 }

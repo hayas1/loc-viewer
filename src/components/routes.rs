@@ -4,7 +4,7 @@ use yew_router::prelude::*;
 use super::{home::Home, statistics::Statistics};
 
 #[derive(Clone, Routable, PartialEq)]
-enum Route {
+pub enum Route {
     #[at("/")]
     Home,
     #[at("/toukei/:host/:owner/:repo")]

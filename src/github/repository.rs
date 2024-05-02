@@ -28,6 +28,10 @@ impl GitHubRepository {
         Self { owner: owner.to_string(), repo: repo.to_string() }
     }
 
+    pub fn host(&self) -> String {
+        "github".to_string()
+    }
+
     pub fn from_url(url: &Url) -> Result<Self> {
         ensure!(url.origin().unicode_serialization() == Self::ORIGIN, InvalidRepositoryUrl::CannotBeBase);
         let mut path_segments = url.path_segments().ok_or_else(|| anyhow!(InvalidRepositoryUrl::CannotBeBase))?;
