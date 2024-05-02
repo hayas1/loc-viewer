@@ -1,3 +1,4 @@
+use anyhow::{anyhow, Result};
 use url::Url;
 use web_sys::HtmlInputElement;
 use yew::prelude::*;
@@ -15,17 +16,21 @@ pub fn home() -> HtmlResult {
     let on_click = {
         let repository_input = repository_input.clone();
         Callback::from(move |_| {
-            let Some(input) = repository_input.cast::<HtmlInputElement>() else {
-                return navigator.push(&Route::NotFound);
-            };
-            let value = input.value();
-            let repository = if value.is_empty() {
-                GitHubRepository::from_url(&Url::parse(example).unwrap()).unwrap()
-            } else {
-                GitHubRepository::from_url(&Url::parse(&value).unwrap()).unwrap()
-            };
-            let (host, GitHubRepository { owner, repo }) = (repository.host(), repository);
-            navigator.push(&Route::Statistics { host, owner, repo })
+            let route: Result<Route> = (|| {
+                let input = repository_input.cast::<HtmlInputElement>().ok_or_else(|| anyhow!("DOM changed"))?;
+                let value = input.value();
+                let repository = if value.is_empty() {
+                    GitHubRepository::from_url(&Url::parse(example)?)?
+                } else {
+                    GitHubRepository::from_url(&Url::parse(&value)?)?
+                };
+                let (host, GitHubRepository { owner, repo }) = (repository.host(), repository);
+                Ok(Route::Statistics { host, owner, repo })
+            })();
+            match route {
+                Ok(route) => navigator.push(&route),
+                Err(err) => gloo::console::error!(err.to_string()), // TODO error handling
+            }
         })
     };
 
