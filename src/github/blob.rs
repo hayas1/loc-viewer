@@ -1,6 +1,7 @@
-use anyhow::Result;
 use base64::prelude::*;
 use std::path::PathBuf;
+
+use crate::error::Result;
 
 use super::models::{BlobsModel, EncodingType};
 
@@ -38,7 +39,7 @@ impl<'a> BlobsModelDecoder<'a> {
     pub fn decode_base64(&self) -> Result<String> {
         let mut encoded = self.model.content.as_bytes().to_owned();
         encoded.retain(|b| !b.is_ascii_whitespace());
-        let decoded = BASE64_STANDARD.decode(encoded)?;
+        let decoded = BASE64_STANDARD.decode(encoded).map_err(anyhow::Error::from)?;
         Ok(String::from_utf8_lossy(&decoded).into_owned())
     }
 }

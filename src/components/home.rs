@@ -1,11 +1,11 @@
-use anyhow::{anyhow, Result};
+use anyhow::anyhow;
 use url::Url;
 use web_sys::HtmlInputElement;
 use yew::prelude::*;
 use yew_router::hooks::use_navigator;
 
 use super::routes::Route;
-use crate::github::repository::GitHubRepository;
+use crate::{error::Result, github::repository::GitHubRepository};
 
 #[function_component(Home)]
 pub fn home() -> HtmlResult {
@@ -20,9 +20,9 @@ pub fn home() -> HtmlResult {
                 let input = repository_input.cast::<HtmlInputElement>().ok_or_else(|| anyhow!("DOM changed"))?;
                 let value = input.value();
                 let repository = if value.is_empty() {
-                    GitHubRepository::from_url(&Url::parse(example)?)?
+                    GitHubRepository::from_url(&Url::parse(example).map_err(anyhow::Error::from)?)?
                 } else {
-                    GitHubRepository::from_url(&Url::parse(&value)?)?
+                    GitHubRepository::from_url(&Url::parse(&value).map_err(anyhow::Error::from)?)?
                 };
                 let (host, GitHubRepository { owner, repo }) = (repository.host(), repository);
                 Ok(Route::Statistics { host, owner, repo })

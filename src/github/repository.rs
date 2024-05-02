@@ -1,13 +1,13 @@
 use std::path::{Path, PathBuf};
 
-use anyhow::{anyhow, ensure, Result};
+use anyhow::anyhow;
 use futures::{stream, Stream, StreamExt, TryStreamExt};
 use gloo::net::http::Request;
 use octocrab::models;
 use url::Url;
 
 use crate::{
-    error::InvalidRepositoryUrl,
+    error::{InvalidRepositoryUrl, Result},
     github::models::{ContentsType, SubtreeModel, TreesModel},
 };
 
@@ -33,7 +33,9 @@ impl GitHubRepository {
     }
 
     pub fn from_url(url: &Url) -> Result<Self> {
-        ensure!(url.origin().unicode_serialization() == Self::ORIGIN, InvalidRepositoryUrl::CannotBeBase);
+        if url.origin().unicode_serialization() != Self::ORIGIN {
+            Err(anyhow!(InvalidRepositoryUrl::CannotBeBase))?
+        }
         let mut path_segments = url.path_segments().ok_or_else(|| anyhow!(InvalidRepositoryUrl::CannotBeBase))?;
         let owner = path_segments.next().ok_or_else(|| anyhow!(InvalidRepositoryUrl::CannotFindOwner))?;
         let repo = path_segments.next().ok_or_else(|| anyhow!(InvalidRepositoryUrl::CannotFindRepo))?;
@@ -42,19 +44,19 @@ impl GitHubRepository {
     }
 
     pub fn to_url(&self) -> Result<Url> {
-        let mut url = Url::parse(Self::ORIGIN)?;
+        let mut url = Url::parse(Self::ORIGIN).map_err(anyhow::Error::from)?;
         url.set_path(&[&self.owner[..], &self.repo[..]].join("/"));
         Ok(url)
     }
 
     pub fn api_endpoint(&self, path: &str) -> Result<Url> {
-        let mut url = Url::parse(Self::API_ORIGIN)?;
+        let mut url = Url::parse(Self::API_ORIGIN).map_err(anyhow::Error::from)?;
         url.set_path(path);
         Ok(url)
     }
 
     pub fn raw_endpoint(&self, path: &str) -> Result<Url> {
-        let mut url = Url::parse(Self::RAW_ORIGIN)?;
+        let mut url = Url::parse(Self::RAW_ORIGIN).map_err(anyhow::Error::from)?;
         url.set_path(path);
         Ok(url)
     }
@@ -63,14 +65,14 @@ impl GitHubRepository {
         let Self { owner, repo } = &self;
         let path = format!("/repos/{owner}/{repo}/git/trees/{sha}");
         let request = Request::get(self.api_endpoint(&path)?.as_str()).query([("recursive", recursive.to_string())]);
-        Ok(request.send().await?.json().await?)
+        Ok(request.send().await.map_err(anyhow::Error::from)?.json().await.map_err(anyhow::Error::from)?)
     }
 
     pub async fn repository(&self) -> Result<models::Repository> {
         let Self { owner, repo } = &self;
         let path = format!("/repos/{owner}/{repo}");
         let request = Request::get(self.api_endpoint(&path)?.as_str());
-        Ok(request.send().await?.json().await?)
+        Ok(request.send().await.map_err(anyhow::Error::from)?.json().await.map_err(anyhow::Error::from)?)
     }
 
     pub async fn raw<A: AsRef<Path>>(&self, sha: &str, path: A) -> Result<String> {
@@ -78,7 +80,7 @@ impl GitHubRepository {
         let path = path.as_ref().to_str().ok_or_else(|| anyhow!("// TODO error handling"))?;
         let path = format!("/{owner}/{repo}/{sha}/{path}");
         let request = Request::get(self.raw_endpoint(&path)?.as_str());
-        Ok(request.send().await?.text().await?)
+        Ok(request.send().await.map_err(anyhow::Error::from)?.text().await.map_err(anyhow::Error::from)?)
     }
 
     pub async fn walk<'a>(&'a self, sha: &'a str) -> impl Stream<Item = Result<GitHubBlob>> + 'a {

@@ -1,8 +1,9 @@
 use std::collections::BTreeMap;
 
-use anyhow::Result;
 use futures::{pin_mut, StreamExt};
 use tokei::{Language, LanguageType, Languages, Report};
+
+use crate::error::Result;
 
 use super::repository::GitHubRepository;
 
@@ -34,7 +35,8 @@ impl Statistics {
     pub async fn walk(repository: &GitHubRepository, config: &tokei::Config) -> Result<Languages> {
         let mut languages: BTreeMap<LanguageType, Language> = BTreeMap::new();
 
-        let sha = repository.repository().await.unwrap().default_branch.unwrap_or("master".to_string());
+        let sha =
+            repository.repository().await.map_err(anyhow::Error::from)?.default_branch.unwrap_or("master".to_string());
         let stream = repository.walk(&sha).await;
         pin_mut!(stream); // needed for iteration
         while let Some(value) = stream.next().await {
