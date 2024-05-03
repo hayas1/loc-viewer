@@ -3,7 +3,7 @@ use web_sys::HtmlInputElement;
 use yew::prelude::*;
 use yew_router::hooks::use_navigator;
 
-use super::routes::Route;
+use super::routes::{Route, RouterUnavailable};
 use crate::{
     error::{render::Unreachable, Result},
     github::repository::GitHubRepository,
@@ -14,7 +14,9 @@ pub fn home() -> HtmlResult {
     let example = "https://github.com/hayas1/loc-viewer";
     let repository_input = use_node_ref();
 
-    let navigator = use_navigator().unwrap();
+    let Some(navigator) = use_navigator() else {
+        return Ok(html! { <RouterUnavailable/> });
+    };
     let on_click = {
         let repository_input = repository_input.clone();
         Callback::from(move |_| {

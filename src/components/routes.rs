@@ -24,23 +24,34 @@ impl Route {
 }
 
 #[function_component(Main)]
-pub fn main() -> Html {
-    html! {
+pub fn main() -> HtmlResult {
+    Ok(html! {
         <BrowserRouter basename="/loc-viewer/"> // TODO do not hard code basename
             <Navbar/>
             <Switch<Route> render={Route::switch} />
         </BrowserRouter>
-    }
+    })
 }
 
 #[function_component(NotFound)]
-pub fn not_found() -> Html {
-    let navigator = use_navigator().unwrap();
+pub fn not_found() -> HtmlResult {
+    let Some(navigator) = use_navigator() else {
+        return Ok(html! { <RouterUnavailable/> });
+    };
     let on_click = Callback::from(move |_| navigator.push(&Route::Home));
-    html! {
+    Ok(html! {
         <div>
             <h1>{ "404" }</h1>
             <button onclick={on_click}>{ "Go Home" }</button>
         </div>
-    }
+    })
+}
+
+#[function_component(RouterUnavailable)]
+pub fn router_unavailable() -> HtmlResult {
+    Ok(html! {
+        <div>
+            <h1>{ "Router Unavailable" }</h1>
+        </div>
+    })
 }

@@ -4,20 +4,23 @@ use yew::prelude::*;
 use yew_autoprops::autoprops;
 use yew_router::hooks::use_location;
 
+use super::routes::RouterUnavailable;
 use crate::github::repository::GitHubRepository;
 
 #[autoprops]
 #[function_component(Statistics)]
-pub fn statistics(host: &String, owner: &String, repo: &String) -> Html {
-    let location = use_location().unwrap();
+pub fn statistics(host: &String, owner: &String, repo: &String) -> HtmlResult {
+    let Some(location) = use_location() else {
+        return Ok(html! { <RouterUnavailable/> });
+    };
     let query = location.query::<HashMap<String, String>>().unwrap();
     let repository = Arc::new(GitHubRepository::new(owner, repo));
-    html! {
+    Ok(html! {
         <div>
             <p>{ format!("{:?}", query) }</p>
             <Table repository={repository}/>
         </div>
-    }
+    })
 }
 
 #[autoprops]
