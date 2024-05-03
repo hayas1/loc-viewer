@@ -12,7 +12,7 @@ if ! (type trunk >/dev/null 2>&1); then
     read -r ans
     case $ans in
     [Yy]*)
-        cargo install trunk
+        cargo install trunk@^0.19 # TODO 2024/05/03 0.20 cause empty page response
         ;;
     *)
         echo "do not install trunk. finish."
