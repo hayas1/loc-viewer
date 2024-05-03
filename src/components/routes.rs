@@ -1,7 +1,7 @@
 use yew::prelude::*;
 use yew_router::prelude::*;
 
-use super::{home::Home, statistics::Statistics};
+use super::{home::Home, navbar::Navbar, statistics::Statistics};
 
 #[derive(Clone, Routable, PartialEq)]
 pub enum Route {
@@ -27,6 +27,7 @@ impl Route {
 pub fn main() -> Html {
     html! {
         <BrowserRouter basename="/loc-viewer/"> // TODO do not hard code basename
+            <Navbar/>
             <Switch<Route> render={Route::switch} />
         </BrowserRouter>
     }
