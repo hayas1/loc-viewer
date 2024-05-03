@@ -16,9 +16,11 @@ pub fn navbar() -> HtmlResult {
     let input_classes = classes!(
         "appearance-none",
         "bg-teal-50",
+        "dark:bg-teal-800",
         "border",
         "border-teal-700",
         "text-teal-900",
+        "dark:text-teal-50",
         "text-sm",
         "rounded-lg",
         "p-1",
@@ -29,28 +31,28 @@ pub fn navbar() -> HtmlResult {
     );
     Ok(html! {
         // base: https://v1.tailwindcss.com/components/navigation#responsive-header
-        <nav class={classes!("relative", "flex", "items-center", "justify-between", "flex-wrap", "text-white", "bg-teal-600", "dark:bg-teal-900", "py-3", "px-6", "h-70px")}>
-            <div class={classes!("absolute", "flex", "items-center", "flex-shrink-0", "mr-6")}>
-                <div>{"logo"}</div>
-            </div>
-            <div class={classes!("relative", "flex-grow", "block", "w-full", "md:flex", "md:items-center", "md:w-auto", collapsed.then(|| "hidden"))}>
-                <div class={classes!("md:flex-grow")}>
-                    <div class={classes!("text-center")}>
-                        <div class={classes!("md:inline-block", "md:mt-0")} title={"Host"}>
+        <nav class={classes!("flex", "items-center", "flex-wrap", "text-white", "bg-teal-600", "dark:bg-teal-900", "py-3", "px-6")}>
+            <div class={classes!("flex", "justify-between", "items-center", "w-full")}>
+                <div class={classes!("inline-block", "text-center")}>
+                    {"logo"}
+                </div>
+                <div class={classes!("inline-block", "justify-center", "w-full")}>
+                    <div class={classes!("flex", "justify-center", "text-center")}>
+                        <div class={classes!("inline-block", "mt-0")} title={"Host"}>
                             <input
                                 class={classes!(input_classes.clone())}
                                 type="text"
                                 placeholder={"https://github.com"}
                                 aria-label="Host"/>
                         </div>
-                        <div class={classes!("md:inline-block", "md:mt-0")} title={"Owner"}>
+                        <div class={classes!("inline-block", "mt-0")} title={"Owner"}>
                             <input
                                 class={classes!(input_classes.clone())}
                                 type="text"
                                 placeholder={"owner"}
                                 aria-label="Owner"/>
                         </div>
-                        <div class={classes!("md:inline-block", "md:mt-0")} title={"Repo"}>
+                        <div class={classes!("inline-block", "mt-0")} title={"Repo"}>
                             <input
                                 class={classes!(input_classes.clone())}
                                 type="text"
@@ -59,15 +61,15 @@ pub fn navbar() -> HtmlResult {
                         </div>
                     </div>
                 </div>
-            </div>
-            <div class={classes!("relative", "flex-grow", "block", "w-full", "text-right", "md:hidden")}>
-                <button onclick={toggle}>
-                    if *collapsed {
-                        <Icon icon_id={IconId::HeroiconsSolidChevronDoubleDown}/>
-                    } else {
-                        <Icon icon_id={IconId::HeroiconsSolidChevronDoubleUp}/>
-                    }
-                </button>
+                <div class={classes!("inline-block", "text-right")}>
+                    <button onclick={toggle}>
+                        if *collapsed {
+                            <Icon icon_id={IconId::HeroiconsSolidChevronDoubleDown}/>
+                        } else {
+                            <Icon icon_id={IconId::HeroiconsSolidChevronDoubleUp}/>
+                        }
+                    </button>
+                </div>
             </div>
         </nav>
     })
