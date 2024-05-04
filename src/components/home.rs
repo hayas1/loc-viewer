@@ -1,4 +1,3 @@
-use once_cell::sync::Lazy;
 use url::Url;
 use web_sys::HtmlInputElement;
 use yew::prelude::*;
@@ -11,63 +10,6 @@ use crate::{
     error::{render::Unreachable, Result},
     github::repository::GitHubRepository,
 };
-
-pub const REPOSITORY_URL_INPUT_CLASSES: Lazy<Classes> = Lazy::new(|| {
-    classes!(
-        "appearance-none",
-        "bg-teal-50",
-        "dark:bg-teal-800",
-        "border",
-        "border-teal-700",
-        "text-teal-900",
-        "dark:text-teal-50",
-        "text-sm",
-        "rounded-lg",
-        "p-1",
-        "focus:outline-none",
-        "block",
-        "w-full"
-    )
-});
-
-pub const REPOSITORY_INFO_INPUT_GROUP_CLASSES: Lazy<Classes> =
-    Lazy::new(|| classes!("pt-4", "h-10", "w-full", "flex", "items-center", "border-b", "border-teal-500"));
-pub const REPOSITORY_INFO_INPUT_LABEL_CLASSES: Lazy<Classes> =
-    Lazy::new(|| classes!("w-20", "text-sm", "text-right", "text-teal-500", "dark:text-teal-50")); // TODO width
-pub const REPOSITORY_INFO_INPUT_ICON_CLASSES: Lazy<Classes> =
-    Lazy::new(|| classes!("h-5", "m-2", "text-teal-500", "dark:text-teal-50")); // TODO better icon position
-pub const REPOSITORY_INFO_INPUT_CLASSES: Lazy<Classes> = Lazy::new(|| {
-    classes!(
-        "ps-3",
-        "appearance-none",
-        "border-none",
-        "w-full",
-        "text-teal-700",
-        "dark:text-teal-50",
-        "rounded-sm",
-        "leading-tight",
-        "focus:outline-none"
-    )
-});
-
-pub const REPOSITORY_INFO_BUTTON_CLASSES: Lazy<Classes> = Lazy::new(|| {
-    classes!(
-        "p-2",
-        "bg-gradient-to-r",
-        "from-teal-500",
-        "via-teal-600",
-        "to-teal-700",
-        "hover:bg-gradient-to-br",
-        "border-teal-600",
-        "hover:border-teal-200",
-        "focus:outline-none",
-        "focus:border-teal-200",
-        "text-sm",
-        "border-2",
-        "text-white",
-        "rounded-full"
-    )
-});
 
 #[function_component(Home)]
 pub fn home() -> HtmlResult {
@@ -133,7 +75,11 @@ pub fn repo_url_bar() -> HtmlResult {
                     class={classes!("absolute", "text-teal-600", "dark:text-teal-50", "m-1")}
                 />
                 <input ref={url_input}
-                    class={classes!("ps-8", REPOSITORY_URL_INPUT_CLASSES.clone())}
+                    class={classes!(
+                        "ps-8", "appearance-none", "bg-teal-50", "dark:bg-teal-800",
+                        "border", "border-teal-700", "text-teal-900", "dark:text-teal-50", "text-sm",
+                        "rounded-lg", "p-1", "focus:outline-none", "block", "w-full"
+                    )}
                     onchange={submit}
                     type="text"
                     placeholder={placeholder}
@@ -199,95 +145,102 @@ pub fn repo_info_forms() -> HtmlResult {
         })
     };
 
+    let inputs = vec![
+        (
+            host_input,
+            "host-input",
+            "Host",
+            "Repository host",
+            "https://github.com",
+            "RepositoryHost",
+            false,
+            IconId::OcticonsMarkGithub16,
+        ),
+        (
+            owner_input,
+            "owner-input",
+            "Owner",
+            "Repository owner",
+            "hayas1",
+            "RepositoryOwner",
+            true,
+            IconId::OcticonsOrganization16,
+        ),
+        (
+            repo_input,
+            "repo-input",
+            "Repo",
+            "Repository name",
+            "loc-viewer",
+            "RepositoryName",
+            true,
+            IconId::OcticonsRepo16,
+        ),
+        (
+            sha_input,
+            "sha-input",
+            "SHA",
+            "SHA of the Repository to get statistics",
+            "main",
+            "RepositorySHA",
+            false,
+            IconId::OcticonsGitCommit16,
+        ),
+        (
+            paths_input,
+            "paths-input",
+            "Paths",
+            "Paths of the repository to get statistics",
+            "/",
+            "RepositoryPaths",
+            false,
+            IconId::OcticonsFileDirectoryOpenFill16,
+        ),
+        (
+            excluded_input,
+            "excluded-input",
+            "Excluded",
+            "Excluded paths of the repository to get statistics",
+            "",
+            "RepositoryExcluded",
+            false,
+            IconId::OcticonsSkip16,
+        ),
+    ];
+
     Ok(html! {
         <div class={classes!("flex", "flex-wrap", "w-full")}>
-            <div class={REPOSITORY_INFO_INPUT_GROUP_CLASSES.clone()}>
-                <label for="host-input" class={classes!(REPOSITORY_INFO_INPUT_LABEL_CLASSES.clone())}>{"Host"}</label>
-                <input ref={host_input}
-                    class={classes!(REPOSITORY_INFO_INPUT_CLASSES.clone(), "bg-transparent")}
-                    id="host-input"
-                    type="text"
-                    title={"Repository host"}
-                    placeholder={"https://github.com"}
-                    aria-label="RepositoryHost"
-                />
-                <div class={classes!("relative")}>
-                    <Icon icon_id={IconId::OcticonsMarkGithub16} class={classes!(REPOSITORY_INFO_INPUT_ICON_CLASSES.clone())}/>
-                </div>
-            </div>
-            <div class={REPOSITORY_INFO_INPUT_GROUP_CLASSES.clone()}>
-                <label for="owner-input" class={classes!(REPOSITORY_INFO_INPUT_LABEL_CLASSES.clone())}>{"Owner"}</label>
-                <input ref={owner_input}
-                    class={classes!(REPOSITORY_INFO_INPUT_CLASSES.clone(), "bg-teal-50", "dark:bg-teal-800")}
-                    id="owner-input"
-                    type="text"
-                    title={"Repository owner"}
-                    placeholder={"hayas1"}
-                    aria-label="RepositoryOwner"
-                />
-                <div class={classes!("relative")}>
-                    <Icon icon_id={IconId::OcticonsOrganization16} class={classes!(REPOSITORY_INFO_INPUT_ICON_CLASSES.clone())}/>
-                </div>
-            </div>
-            <div class={REPOSITORY_INFO_INPUT_GROUP_CLASSES.clone()}>
-                <label for="repo-input" class={classes!(REPOSITORY_INFO_INPUT_LABEL_CLASSES.clone())}>{"Repo"}</label>
-                <input ref={repo_input}
-                    class={classes!(REPOSITORY_INFO_INPUT_CLASSES.clone(), "bg-teal-50", "dark:bg-teal-800")}
-                    id="repo-input"
-                    type="text"
-                    title={"Repository name"}
-                    placeholder={"loc-viewer"}
-                    aria-label="RepositoryName"
-                />
-                <div class={classes!("relative")}>
-                    <Icon icon_id={IconId::OcticonsRepo16} class={classes!(REPOSITORY_INFO_INPUT_ICON_CLASSES.clone())}/>
-                </div>
-            </div>
-            <div class={REPOSITORY_INFO_INPUT_GROUP_CLASSES.clone()}>
-                <label for="sha-input" class={classes!(REPOSITORY_INFO_INPUT_LABEL_CLASSES.clone())}>{"SHA"}</label>
-                <input ref={sha_input}
-                    class={classes!(REPOSITORY_INFO_INPUT_CLASSES.clone(), "bg-transparent")}
-                    id="sha-input"
-                    type="text"
-                    title={"SHA of the Repository to get statistics"}
-                    placeholder={"main"}
-                    aria-label="RepositorySHA"
-                />
-                <div class={classes!("relative")}>
-                    <Icon icon_id={IconId::OcticonsGitCommit16} class={classes!(REPOSITORY_INFO_INPUT_ICON_CLASSES.clone())}/>
-                </div>
-            </div>
-            <div class={REPOSITORY_INFO_INPUT_GROUP_CLASSES.clone()}>
-                <label for="paths-input" class={classes!(REPOSITORY_INFO_INPUT_LABEL_CLASSES.clone())}>{"Paths"}</label>
-                <input ref={paths_input}
-                    class={classes!(REPOSITORY_INFO_INPUT_CLASSES.clone(), "bg-transparent")}
-                    id="paths-input"
-                    type="text"
-                    title={"Paths of the repository to get statistics"}
-                    placeholder={"/"}
-                    aria-label="RepositoryPaths"
-                />
-                <div class={classes!("relative")}>
-                    <Icon icon_id={IconId::OcticonsFileDirectoryOpenFill16} class={classes!(REPOSITORY_INFO_INPUT_ICON_CLASSES.clone())}/>
-                </div>
-            </div>
-            <div class={REPOSITORY_INFO_INPUT_GROUP_CLASSES.clone()}>
-                <label for="excluded-input" class={classes!(REPOSITORY_INFO_INPUT_LABEL_CLASSES.clone())}>{"Excluded"}</label>
-                <input ref={excluded_input}
-                    class={classes!(REPOSITORY_INFO_INPUT_CLASSES.clone(), "bg-transparent")}
-                    id="excluded-input"
-                    type="text"
-                    title={"Excluded paths of the repository to get statistics"}
-                    placeholder={""}
-                    aria-label="RepositoryExcluded"
-                />
-                <div class={classes!("relative")}>
-                    <Icon icon_id={IconId::OcticonsSkip16} class={classes!(REPOSITORY_INFO_INPUT_ICON_CLASSES.clone())}/>
-                </div>
-            </div>
+            {for inputs.into_iter().map(|(input, id, label, title, placeholder, aria_label, required, icon)| {
+                let bg = if required { classes!("bg-teal-50", "dark:bg-teal-800") } else { classes!("bg-transparent") };
+                html! {
+                    <div class={classes!("pt-4", "h-10", "w-full", "flex", "items-center", "border-b", "border-teal-500")}>
+                        <label for={id} class={classes!("w-20", "text-sm", "text-right", "text-teal-500", "dark:text-teal-50")}>
+                            {label}
+                        </label>
+                        <input ref={input}
+                            class={classes!(
+                                "ps-3", "appearance-none", "border-none", "w-full", "text-teal-700", "dark:text-teal-50",
+                                "rounded-sm", "leading-tight", "focus:outline-none", bg
+                            )}
+                            id={id}
+                            type="text"
+                            title={title}
+                            placeholder={placeholder}
+                            aria-label={aria_label}
+                        />
+                        <div class={classes!("relative")}>
+                            <Icon icon_id={icon} class={classes!("h-5", "m-2", "text-teal-500", "dark:text-teal-50")}/>
+                        </div>
+                    </div>
+                }
+            })}
             <div class={classes!("py-2", "text-center", "pt-4", "w-full")}>
                 <button
-                    class={classes!(REPOSITORY_INFO_BUTTON_CLASSES.clone())}
+                    class={classes!(
+                        "p-2", "bg-gradient-to-r", "from-teal-500", "via-teal-600", "to-teal-700", "hover:bg-gradient-to-br",
+                        "border-teal-600", "hover:border-teal-200", "focus:outline-none", "focus:border-teal-200", "text-sm",
+                        "border-2", "text-white", "rounded-full"
+                    )}
                     onclick={statistics}
                     type="button"
                     title={"Get statistics!"}

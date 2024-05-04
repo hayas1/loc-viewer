@@ -1,27 +1,9 @@
-use once_cell::sync::Lazy;
 use yew::prelude::*;
 use yew_autoprops::autoprops;
 use yew_icons::{Icon, IconId};
 use yew_router::hooks::use_navigator;
 
 use super::{home::RepoUrlBar, routes::GoHome, REPOSITORY};
-
-pub const NAVBAR_BUTTON_CLASSES: Lazy<Classes> = Lazy::new(|| {
-    classes!(
-        "appearance-none",
-        "bg-teal-500",
-        "dark:bg-teal-900",
-        "border",
-        "border-teal-500",
-        "text-teal-50",
-        "text-sm",
-        "rounded",
-        "p-1",
-        "focus:ring-blue-500",
-        "focus:border-blue-500",
-        "block",
-    )
-});
 
 #[autoprops]
 #[function_component(Logo)]
