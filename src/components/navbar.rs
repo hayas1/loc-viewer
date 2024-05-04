@@ -1,13 +1,17 @@
 use once_cell::sync::Lazy;
+use url::Url;
 use web_sys::HtmlInputElement;
 use yew::prelude::*;
 use yew_autoprops::autoprops;
 use yew_icons::{Icon, IconId};
 use yew_router::hooks::use_navigator;
 
-use crate::error::{render::Unreachable, Result};
+use crate::{
+    error::{render::Unreachable, Result},
+    github::repository::GitHubRepository,
+};
 
-use super::routes::{Route, RouterUnavailable};
+use super::routes::Route;
 
 pub const NAVBAR_INPUT_CLASSES: Lazy<Classes> = Lazy::new(|| {
     classes!(
@@ -57,103 +61,60 @@ pub fn logo() -> HtmlResult {
 #[autoprops]
 #[function_component(Navbar)]
 pub fn navbar() -> HtmlResult {
-    let Some(navigator) = use_navigator() else {
-        return Ok(html! { <RouterUnavailable/> });
-    };
+    let placeholder = "https://github.com/hayas1/loc-viewer";
 
-    let collapsed = use_state(|| true);
-    let toggle = {
-        let collapsed = collapsed.clone();
-        Callback::from(move |_| {
-            collapsed.set(!*collapsed);
-        })
-    };
-
-    let (host_input, owner_input, repo_input) = (use_node_ref(), use_node_ref(), use_node_ref());
-    let on_click = {
-        let (host_input, owner_input, repo_input) = (host_input.clone(), owner_input.clone(), repo_input.clone());
+    let navigator = use_navigator();
+    let url_input = use_node_ref();
+    let submit = {
+        let (navigator, url_input) = (navigator.clone(), url_input.clone());
         Callback::from(move |_| {
             let route: Result<_> = (|| {
-                let host = host_input
+                let url = url_input
                     .cast::<HtmlInputElement>()
                     .ok_or_else(|| anyhow::anyhow!(Unreachable::DomMaybeChanged))?
                     .value();
-                let owner = owner_input
-                    .cast::<HtmlInputElement>()
-                    .ok_or_else(|| anyhow::anyhow!(Unreachable::DomMaybeChanged))?
-                    .value();
-                let repo = repo_input
-                    .cast::<HtmlInputElement>()
-                    .ok_or_else(|| anyhow::anyhow!(Unreachable::DomMaybeChanged))?
-                    .value();
+                let repository = if url.is_empty() {
+                    GitHubRepository::from_url(&Url::parse(placeholder).map_err(anyhow::Error::from)?)?
+                } else {
+                    GitHubRepository::from_url(&Url::parse(&url).map_err(anyhow::Error::from)?)?
+                };
+                let (host, GitHubRepository { owner, repo }) = (repository.host(), repository);
                 Ok(Route::Statistics { host, owner, repo })
             })();
-            match route {
-                Ok(route) => navigator.push(&route),
-                Err(err) => gloo::console::error!(err.to_string()), // TODO error handling
+            match (navigator.clone(), route) {
+                (None, _) => gloo::console::warn!("Navigator is not available"),
+                (Some(navigator), Ok(route)) => navigator.push(&route),
+                (_, Err(err)) => gloo::console::error!(err.to_string()), // TODO error handling
             }
         })
     };
 
     Ok(html! {
-        <nav class={classes!("flex", "items-center", "flex-wrap", "text-white", "bg-teal-600", "dark:bg-teal-900", "py-3", "px-6")}>
+        <nav class={classes!("flex", "items-center", "flex-wrap", "text-teal-50", "bg-teal-600", "dark:bg-teal-900", "py-3", "px-6")}>
             <div class={classes!("flex", "justify-between", "items-center", "w-full")}>
                 <div class={classes!("inline-block", "text-center")}>
                     <Logo/>
                 </div>
-                <div class={classes!("inline-block", "justify-center", "w-full")}>
+                <div class={classes!("inline-block", "shrink", "w-full", "max-w-screen-md")}>
                     <div class={classes!("flex", "justify-center", "text-center")}>
-                        <div class={classes!("inline-block", "mt-0")} title={"Host"}>
-                            <NavbarHostInput input_ref={host_input}/>
-                        </div>
-                        <div class={classes!("inline-block", "mt-0")} title={"Owner"}>
-                            <input ref={owner_input}
-                                class={classes!(NAVBAR_INPUT_CLASSES.clone())}
+                        <div class={classes!("inline-block", "grow", "px-3")} title={"Repository URL"}>
+                            <Icon icon_id={IconId::OcticonsMarkGithub16}
+                                class={classes!("absolute", "text-teal-600", "dark:text-teal-50", "m-1")}
+                            />
+                            <input ref={url_input}
+                                class={classes!("ps-8", NAVBAR_INPUT_CLASSES.clone())}
+                                onchange={submit}
                                 type="text"
-                                placeholder={"owner"}
-                                aria-label="Owner"/>
+                                placeholder={placeholder}
+                                aria-label="repository-url"
+                            />
                         </div>
-                        <div class={classes!("inline-block", "mt-0")} title={"Repo"}>
-                            <input ref={repo_input}
-                                class={classes!(NAVBAR_INPUT_CLASSES.clone())}
-                                type="text"
-                                placeholder={"repo"}
-                                aria-label="Repo"/>
-                        </div>
-                        <button
-                            class={classes!("inline-block", "mt-0", NAVBAR_BUTTON_CLASSES.clone())}
-                            onclick={on_click}
-                            type="button"
-                        >
-                            { "Toukei" }
-                        </button>
                     </div>
                 </div>
-                <div class={classes!("inline-block", "text-right")}>
-                    <button onclick={toggle}>
-                        if *collapsed {
-                            <Icon icon_id={IconId::HeroiconsSolidChevronDoubleDown}/>
-                        } else {
-                            <Icon icon_id={IconId::HeroiconsSolidChevronDoubleUp}/>
-                        }
-                    </button>
+                <div class={classes!("inline-block", "text-right", "text-teal-200", "text-sm")}>
+                    <Icon icon_id={IconId::HeroiconsOutlineInformationCircle} title={"Information"}/>
                 </div>
             </div>
         </nav>
-    })
-}
-
-#[autoprops]
-#[function_component(NavbarHostInput)]
-pub fn navbar_host_input(input_ref: &NodeRef) -> HtmlResult {
-    Ok(html! {
-       <div>
-           <Icon icon_id={IconId::OcticonsMarkGithub16} class={classes!("absolute", "text-teal-500", "m-1")}/>
-           <input ref={input_ref}
-                class={classes!(NAVBAR_INPUT_CLASSES.clone(), "ps-7")}
-                type="text"
-                placeholder={"https://github.com"}
-                aria-label="Host"/>
-       </div>
     })
 }

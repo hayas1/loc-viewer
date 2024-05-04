@@ -9,7 +9,11 @@ edition = "2021"
 yew = { version = "0.21", features = ["csr"] }
 yew-router = "0.18"
 yew-autoprops = "0.4"
-yew_icons = { version = "0.8", features = ["heroicons_solid", "octicons"] }
+yew_icons = { version = "0.8", features = [
+    "heroicons_solid",
+    "heroicons_outline",
+    "octicons",
+] }
 gloo = "0.11"
 web-sys = "0.3"
 wasm-bindgen-futures = "0.4"
