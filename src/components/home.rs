@@ -33,9 +33,9 @@ pub const REPOSITORY_URL_INPUT_CLASSES: Lazy<Classes> = Lazy::new(|| {
 pub const REPOSITORY_INFO_INPUT_GROUP_CLASSES: Lazy<Classes> =
     Lazy::new(|| classes!("pt-4", "h-10", "w-full", "flex", "items-center", "border-b", "border-teal-500"));
 pub const REPOSITORY_INFO_INPUT_LABEL_CLASSES: Lazy<Classes> =
-    Lazy::new(|| classes!("w-16", "text-right", "text-teal-500", "dark:text-teal-50")); // TODO width
+    Lazy::new(|| classes!("w-20", "text-sm", "text-right", "text-teal-500", "dark:text-teal-50")); // TODO width
 pub const REPOSITORY_INFO_INPUT_ICON_CLASSES: Lazy<Classes> =
-    Lazy::new(|| classes!("h-4", "text-teal-500", "dark:text-teal-50")); // TODO better icon position
+    Lazy::new(|| classes!("h-5", "text-teal-500", "dark:text-teal-50")); // TODO better icon position
 pub const REPOSITORY_INFO_INPUT_CLASSES: Lazy<Classes> = Lazy::new(|| {
     classes!(
         "ps-3",
@@ -148,11 +148,11 @@ pub fn repo_info_forms() -> HtmlResult {
     let navigator = use_navigator();
 
     let (host_input, owner_input, repo_input) = (use_node_ref(), use_node_ref(), use_node_ref());
-    let (sha_input, path_input) = (use_node_ref(), use_node_ref());
+    let (sha_input, paths_input, excluded_input) = (use_node_ref(), use_node_ref(), use_node_ref());
 
     let statistics = {
         let (host_input, owner_input, repo_input) = (host_input.clone(), owner_input.clone(), repo_input.clone());
-        let (sha_input, path_input) = (sha_input.clone(), path_input.clone());
+        let (sha_input, paths_input, excluded_input) = (sha_input.clone(), paths_input.clone(), excluded_input.clone());
         Callback::from(move |_| {
             let route: Result<Route> = (|| {
                 let host = host_input
@@ -173,12 +173,16 @@ pub fn repo_info_forms() -> HtmlResult {
                     .value();
                 let repo = if repo.is_empty() { "loc-viewer".to_string() } else { repo };
 
-                // TODO sha and path
+                // TODO sha and paths and excluded
                 let _sha = sha_input
                     .cast::<HtmlInputElement>()
                     .ok_or_else(|| anyhow::anyhow!(Unreachable::DomMaybeChanged))?
                     .value();
-                let _path = path_input
+                let _paths = paths_input
+                    .cast::<HtmlInputElement>()
+                    .ok_or_else(|| anyhow::anyhow!(Unreachable::DomMaybeChanged))?
+                    .value();
+                let _excluded = excluded_input
                     .cast::<HtmlInputElement>()
                     .ok_or_else(|| anyhow::anyhow!(Unreachable::DomMaybeChanged))?
                     .value();
@@ -252,17 +256,31 @@ pub fn repo_info_forms() -> HtmlResult {
                 </div>
             </div>
             <div class={REPOSITORY_INFO_INPUT_GROUP_CLASSES.clone()}>
-                <label for="path-input" class={classes!(REPOSITORY_INFO_INPUT_LABEL_CLASSES.clone())}>{"Path"}</label>
-                <input ref={path_input}
+                <label for="paths-input" class={classes!(REPOSITORY_INFO_INPUT_LABEL_CLASSES.clone())}>{"Paths"}</label>
+                <input ref={paths_input}
                     class={classes!(REPOSITORY_INFO_INPUT_CLASSES.clone())}
-                    id="path-input"
+                    id="paths-input"
                     type="text"
-                    title={"Path of the repository to get statistics"}
+                    title={"Paths of the repository to get statistics"}
                     placeholder={"/"}
-                    aria-label="RepositoryPath"
+                    aria-label="RepositoryPaths"
                 />
                 <div class={classes!("relative")}>
                     <Icon icon_id={IconId::OcticonsFileDirectoryOpenFill16} class={classes!(REPOSITORY_INFO_INPUT_ICON_CLASSES.clone())}/>
+                </div>
+            </div>
+            <div class={REPOSITORY_INFO_INPUT_GROUP_CLASSES.clone()}>
+                <label for="excluded-input" class={classes!(REPOSITORY_INFO_INPUT_LABEL_CLASSES.clone())}>{"Excluded"}</label>
+                <input ref={excluded_input}
+                    class={classes!(REPOSITORY_INFO_INPUT_CLASSES.clone())}
+                    id="excluded-input"
+                    type="text"
+                    title={"Excluded paths of the repository to get statistics"}
+                    placeholder={""}
+                    aria-label="RepositoryExcluded"
+                />
+                <div class={classes!("relative")}>
+                    <Icon icon_id={IconId::OcticonsSkip16} class={classes!(REPOSITORY_INFO_INPUT_ICON_CLASSES.clone())}/>
                 </div>
             </div>
             <div class={classes!("py-2", "text-center", "pt-4", "w-full")}>
