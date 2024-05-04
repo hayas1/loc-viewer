@@ -16,7 +16,7 @@ pub const REPOSITORY_URL_INPUT_CLASSES: Lazy<Classes> = Lazy::new(|| {
     classes!(
         "appearance-none",
         "bg-teal-50",
-        "dark:bg-teal-900",
+        "dark:bg-teal-800",
         "border",
         "border-teal-700",
         "text-teal-900",
@@ -274,7 +274,7 @@ pub fn repo_info_forms() -> HtmlResult {
             <div class={REPOSITORY_INFO_INPUT_GROUP_CLASSES.clone()}>
                 <label for="excluded-input" class={classes!(REPOSITORY_INFO_INPUT_LABEL_CLASSES.clone())}>{"Excluded"}</label>
                 <input ref={excluded_input}
-                    class={classes!(REPOSITORY_INFO_INPUT_CLASSES.clone())}
+                    class={classes!(REPOSITORY_INFO_INPUT_CLASSES.clone(), "bg-transparent")}
                     id="excluded-input"
                     type="text"
                     title={"Excluded paths of the repository to get statistics"}
