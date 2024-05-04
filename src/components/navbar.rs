@@ -1,19 +1,10 @@
+use once_cell::sync::Lazy;
 use yew::prelude::*;
 use yew_autoprops::autoprops;
 use yew_icons::{Icon, IconId};
 
-#[autoprops]
-#[function_component(Navbar)]
-pub fn navbar() -> HtmlResult {
-    let collapsed = use_state(|| true);
-    let toggle = {
-        let collapsed = collapsed.clone();
-        Callback::from(move |_| {
-            collapsed.set(!*collapsed);
-        })
-    };
-
-    let input_classes = classes!(
+pub const NAVBAR_INPUT_CLASSES: Lazy<Classes> = Lazy::new(|| {
+    classes!(
         "appearance-none",
         "bg-teal-50",
         "dark:bg-teal-800",
@@ -28,7 +19,20 @@ pub fn navbar() -> HtmlResult {
         "focus:border-blue-500",
         "block",
         "w-full"
-    );
+    )
+});
+
+#[autoprops]
+#[function_component(Navbar)]
+pub fn navbar() -> HtmlResult {
+    let collapsed = use_state(|| true);
+    let toggle = {
+        let collapsed = collapsed.clone();
+        Callback::from(move |_| {
+            collapsed.set(!*collapsed);
+        })
+    };
+
     Ok(html! {
         // base: https://v1.tailwindcss.com/components/navigation#responsive-header
         <nav class={classes!("flex", "items-center", "flex-wrap", "text-white", "bg-teal-600", "dark:bg-teal-900", "py-3", "px-6")}>
@@ -39,22 +43,18 @@ pub fn navbar() -> HtmlResult {
                 <div class={classes!("inline-block", "justify-center", "w-full")}>
                     <div class={classes!("flex", "justify-center", "text-center")}>
                         <div class={classes!("inline-block", "mt-0")} title={"Host"}>
-                            <input
-                                class={classes!(input_classes.clone())}
-                                type="text"
-                                placeholder={"https://github.com"}
-                                aria-label="Host"/>
+                            <NavbarHostInput/>
                         </div>
                         <div class={classes!("inline-block", "mt-0")} title={"Owner"}>
                             <input
-                                class={classes!(input_classes.clone())}
+                                class={classes!(NAVBAR_INPUT_CLASSES.clone())}
                                 type="text"
                                 placeholder={"owner"}
                                 aria-label="Owner"/>
                         </div>
                         <div class={classes!("inline-block", "mt-0")} title={"Repo"}>
                             <input
-                                class={classes!(input_classes.clone())}
+                                class={classes!(NAVBAR_INPUT_CLASSES.clone())}
                                 type="text"
                                 placeholder={"repo"}
                                 aria-label="Repo"/>
@@ -72,5 +72,20 @@ pub fn navbar() -> HtmlResult {
                 </div>
             </div>
         </nav>
+    })
+}
+
+#[autoprops]
+#[function_component(NavbarHostInput)]
+pub fn navbar_host_input() -> HtmlResult {
+    Ok(html! {
+       <div>
+           <Icon icon_id={IconId::OcticonsMarkGithub16} class={classes!("absolute", "text-teal-500", "m-1")}/>
+           <input
+                class={classes!(NAVBAR_INPUT_CLASSES.clone(), "ps-7")}
+                type="text"
+                placeholder={"https://github.com"}
+                aria-label="Host"/>
+       </div>
     })
 }
