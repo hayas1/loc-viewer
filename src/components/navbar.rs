@@ -27,12 +27,13 @@ pub const NAVBAR_BUTTON_CLASSES: Lazy<Classes> = Lazy::new(|| {
 #[function_component(Logo)]
 pub fn logo() -> HtmlResult {
     let navigator = use_navigator();
-    let logo_html = html! {
-        <span class={classes!("font-semibold", "text-xl", "tracking-tight")}>
-            { "Toukei" }
-        </span>
-    };
-    Ok(html! {<GoHome navigator={navigator} html={logo_html}/>})
+    Ok(html! {
+        <GoHome navigator={navigator}>
+            <span class={classes!("font-semibold", "text-xl", "tracking-tight")}>
+                { "Toukei" }
+            </span>
+        </GoHome>
+    })
 }
 
 #[autoprops]

@@ -51,12 +51,12 @@ pub fn background(children: &Children) -> HtmlResult {
 
 #[autoprops]
 #[function_component(GoHome)]
-pub fn go_home(navigator: &Option<Navigator>, html: &Html) -> HtmlResult {
+pub fn go_home(navigator: &Option<Navigator>, children: &Children) -> HtmlResult {
     Ok(html! {
         if let Some(nav) = navigator.clone() {
-            <button type="none" onclick={Callback::from(move |_| nav.push(&Route::Home))}>{ html.clone() }</button>
+            <button type="none" onclick={Callback::from(move |_| nav.push(&Route::Home))}>{ children.clone() }</button>
         } else {
-            <a href={BASENAME}>{ html.clone() }</a>
+            <a href={BASENAME}>{ children.clone() }</a>
         }
     })
 }
@@ -68,7 +68,9 @@ pub fn not_found() -> HtmlResult {
     Ok(html! {
         <div>
             <h1>{ "404" }</h1>
-            <GoHome navigator={navigator} html={ "Go Home" }/>
+            <GoHome navigator={navigator}>
+                <span>{ "Go Home" }</span>
+            </GoHome>
         </div>
     })
 }
@@ -79,7 +81,9 @@ pub fn router_unavailable() -> HtmlResult {
     Ok(html! {
         <div>
             <h1>{ "Router Unavailable" }</h1>
-            <GoHome navigator={None} html={ "Go Home" }/>
+            <GoHome navigator={None}>
+                <span>{ "Go Home" }</span>
+            </GoHome>
         </div>
     })
 }
