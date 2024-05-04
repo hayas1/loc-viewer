@@ -11,13 +11,16 @@ use crate::{
     github::repository::GitHubRepository,
 };
 
-use super::{REPOSITORY, routes::{GoHome, Route}};
+use super::{
+    routes::{GoHome, Route},
+    REPOSITORY,
+};
 
 pub const NAVBAR_INPUT_CLASSES: Lazy<Classes> = Lazy::new(|| {
     classes!(
         "appearance-none",
         "bg-teal-50",
-        "dark:bg-teal-800",
+        "dark:bg-teal-900",
         "border",
         "border-teal-700",
         "text-teal-900",
@@ -25,8 +28,7 @@ pub const NAVBAR_INPUT_CLASSES: Lazy<Classes> = Lazy::new(|| {
         "text-sm",
         "rounded-lg",
         "p-1",
-        "focus:ring-blue-500",
-        "focus:border-blue-500",
+        "focus:outline-none",
         "block",
         "w-full"
     )
@@ -92,7 +94,7 @@ pub fn navbar() -> HtmlResult {
     };
 
     Ok(html! {
-        <nav class={classes!("flex", "items-center", "flex-wrap", "text-teal-50", "bg-teal-600", "dark:bg-teal-900", "py-3", "px-6")}>
+        <nav class={classes!("flex", "items-center", "flex-wrap", "text-teal-50", "bg-teal-600", "dark:bg-teal-950", "py-3", "px-6")}>
             <div class={classes!("flex", "justify-between", "items-center", "w-full")}>
                 <div class={classes!("inline-block", "text-center")}>
                     <Logo/>
