@@ -1,15 +1,39 @@
 use once_cell::sync::Lazy;
+use url::Url;
 use web_sys::HtmlInputElement;
 use yew::prelude::*;
+use yew_autoprops::autoprops;
+use yew_icons::{Icon, IconId};
 use yew_router::hooks::use_navigator;
 
-use super::routes::{Route, RouterUnavailable};
-use crate::error::{render::Unreachable, Result};
+use super::routes::Route;
+use crate::{
+    error::{render::Unreachable, Result},
+    github::repository::GitHubRepository,
+};
+
+pub const NAVBAR_INPUT_CLASSES: Lazy<Classes> = Lazy::new(|| {
+    classes!(
+        "appearance-none",
+        "bg-teal-50",
+        "dark:bg-teal-900",
+        "border",
+        "border-teal-700",
+        "text-teal-900",
+        "dark:text-teal-50",
+        "text-sm",
+        "rounded-lg",
+        "p-1",
+        "focus:outline-none",
+        "block",
+        "w-full"
+    )
+});
 
 pub const HOME_INPUT_GROUP_CLASSES: Lazy<Classes> =
     Lazy::new(|| classes!("pt-4", "h-10", "w-full", "flex", "items-center", "border-b", "border-teal-500"));
 pub const HOME_INPUT_LABEL_CLASSES: Lazy<Classes> =
-    Lazy::new(|| classes!("w-12", "text-teal-500", "dark:text-teal-50"));
+    Lazy::new(|| classes!("w-16", "text-right", "text-teal-500", "dark:text-teal-50")); // TODO width
 pub const HOME_INPUT_CLASSES: Lazy<Classes> = Lazy::new(|| {
     classes!(
         "ps-3",
@@ -45,9 +69,81 @@ pub const HOME_BUTTON_CLASSES: Lazy<Classes> = Lazy::new(|| {
 
 #[function_component(Home)]
 pub fn home() -> HtmlResult {
-    let Some(navigator) = use_navigator() else {
-        return Ok(html! { <RouterUnavailable/> });
+    let h1 = "Statistics about code";
+    let description =
+        "Input repository URL or information, to display statistics about code of the remote repositories.";
+    Ok(html! {
+        <div class={classes!("p-2", "flex", "justify-center", "min-h-screen", "bg-teal-0", "bg-teal-50", "dark:bg-teal-950")}>
+            <div class={classes!("p-6", "container", "rounded-xl", "max-w-screen-lg", "bg-white", "dark:text-teal-50", "dark:bg-teal-900")}>
+                <h1 class={classes!("p-2", "text-teal-900", "dark:text-teal-50", "text-xl")}>
+                    { h1 }
+                </h1>
+                <p class={classes!("p-2", "text-slate-500", "dark:text-slate-400", "text-sm")}>
+                    { description }
+                </p>
+                <div class={classes!("md:flex", "md:justify-center", "md:items-center", "gap-4")}>
+                    <RepoUrlBar/>
+                    <p class={classes!("p-2", "text-teal-900", "dark:text-teal-50", "text-center")}>{"or"}</p>
+                    <RepoInfoForms/>
+                </div>
+            </div>
+        </div>
+    })
+}
+
+#[autoprops]
+#[function_component(RepoUrlBar)]
+pub fn repo_url_bar() -> HtmlResult {
+    let placeholder = "https://github.com/hayas1/loc-viewer";
+
+    let navigator = use_navigator();
+    let url_input = use_node_ref();
+    let submit = {
+        let (navigator, url_input) = (navigator.clone(), url_input.clone());
+        Callback::from(move |_| {
+            let route: Result<_> = (|| {
+                let url = url_input
+                    .cast::<HtmlInputElement>()
+                    .ok_or_else(|| anyhow::anyhow!(Unreachable::DomMaybeChanged))?
+                    .value();
+                let repository = if url.is_empty() {
+                    GitHubRepository::from_url(&Url::parse(placeholder).map_err(anyhow::Error::from)?)?
+                } else {
+                    GitHubRepository::from_url(&Url::parse(&url).map_err(anyhow::Error::from)?)?
+                };
+                let (host, GitHubRepository { owner, repo }) = (repository.host(), repository);
+                Ok(Route::Statistics { host, owner, repo })
+            })();
+            match (navigator.clone(), route) {
+                (None, _) => gloo::console::error!("Navigator is not available"),
+                (Some(navigator), Ok(route)) => navigator.push(&route),
+                (_, Err(err)) => gloo::console::error!(err.to_string()), // TODO error handling
+            }
+        })
     };
+
+    Ok(html! {
+        <div class={classes!("flex", "justify-center", "text-center", "w-full")}>
+            <div class={classes!("inline-block", "grow")} title={"Repository URL"}>
+                <Icon icon_id={IconId::OcticonsMarkGithub16}
+                    class={classes!("absolute", "text-teal-600", "dark:text-teal-50", "m-1")}
+                />
+                <input ref={url_input}
+                    class={classes!("ps-8", NAVBAR_INPUT_CLASSES.clone())}
+                    onchange={submit}
+                    type="text"
+                    placeholder={placeholder}
+                    aria-label="repository-url"
+                />
+            </div>
+        </div>
+    })
+}
+
+#[autoprops]
+#[function_component(RepoInfoForms)]
+pub fn repo_info_forms() -> HtmlResult {
+    let navigator = use_navigator();
 
     let (host_input, owner_input, repo_input) = (use_node_ref(), use_node_ref(), use_node_ref());
     let (sha_input, path_input) = (use_node_ref(), use_node_ref());
@@ -87,85 +183,80 @@ pub fn home() -> HtmlResult {
 
                 Ok(Route::Statistics { host, owner, repo })
             })();
-            match route {
-                Ok(route) => navigator.push(&route),
-                Err(err) => gloo::console::error!(err.to_string()), // TODO error handling
+            match (navigator.clone(), route) {
+                (None, _) => gloo::console::error!("Navigator is not available"),
+                (Some(navigator), Ok(route)) => navigator.push(&route),
+                (_, Err(err)) => gloo::console::error!(err.to_string()), // TODO error handling
             }
         })
     };
 
     Ok(html! {
-        <div class={classes!("p-2", "flex", "justify-center", "min-h-screen", "bg-teal-0", "bg-teal-50", "dark:bg-teal-950")}>
-            <div class={classes!("p-6", "md:p-12", "container", "rounded-xl", "max-w-screen-lg", "bg-white", "dark:text-teal-50", "dark:bg-teal-900")}>
-                <div class={classes!("md:flex", "gap-4")}>
-                    <div class={classes!("md:flex-initial", "md:w-4/12")}>
-                        <div class={classes!("text-slate-500", "text-sm")}>
-                            {"Display statistics about code of remote the repositories. Let's try Toukei."}
-                        </div>
-                        <div class={classes!("py-2","text-center")}>
-                            <button
-                                class={classes!(HOME_BUTTON_CLASSES.clone())}
-                                onclick={statistics}
-                                type="button"
-                                title={"Get statistics!"}
-                            >
-                                { "Toukei" }
-                            </button>
-                        </div>
-                    </div>
-                    <div class={classes!("flex", "flex-wrap", "w-full")}>
-                        <div class={HOME_INPUT_GROUP_CLASSES.clone()}>
-                            <label for="host-input" class={classes!(HOME_INPUT_LABEL_CLASSES.clone())}>{"Host"}</label>
-                            <input ref={host_input}
-                                class={classes!(HOME_INPUT_CLASSES.clone())}
-                                type="text"
-                                title={"Repository host"}
-                                placeholder={"https://github.com"}
-                                aria-label="RepositoryHost"
-                            />
-                        </div>
-                        <div class={HOME_INPUT_GROUP_CLASSES.clone()}>
-                            <label for="owner-input" class={classes!(HOME_INPUT_LABEL_CLASSES.clone())}>{"Owner"}</label>
-                            <input ref={owner_input}
-                                class={classes!(HOME_INPUT_CLASSES.clone())}
-                                type="text"
-                                title={"Repository owner"}
-                                placeholder={"hayas1"}
-                                aria-label="RepositoryOwner"
-                            />
-                        </div>
-                        <div class={HOME_INPUT_GROUP_CLASSES.clone()}>
-                            <label for="repo-input" class={classes!(HOME_INPUT_LABEL_CLASSES.clone())}>{"Repo"}</label>
-                            <input ref={repo_input}
-                                class={classes!(HOME_INPUT_CLASSES.clone())}
-                                type="text"
-                                title={"Repository name"}
-                                placeholder={"loc-viewer"}
-                                aria-label="RepositoryName"
-                            />
-                        </div>
-                        <div class={HOME_INPUT_GROUP_CLASSES.clone()}>
-                            <label for="sha-input" class={classes!(HOME_INPUT_LABEL_CLASSES.clone())}>{"SHA"}</label>
-                            <input ref={sha_input}
-                                class={classes!(HOME_INPUT_CLASSES.clone())}
-                                type="text"
-                                title={"SHA of the Repository to get statistics"}
-                                placeholder={"main"}
-                                aria-label="RepositorySHA"
-                            />
-                        </div>
-                        <div class={HOME_INPUT_GROUP_CLASSES.clone()}>
-                            <label for="path-input" class={classes!(HOME_INPUT_LABEL_CLASSES.clone())}>{"Path"}</label>
-                            <input ref={path_input}
-                                class={classes!(HOME_INPUT_CLASSES.clone())}
-                                type="text"
-                                title={"Path of the repository to get statistics"}
-                                placeholder={"/"}
-                                aria-label="RepositoryPath"
-                            />
-                        </div>
-                    </div>
-                </div>
+        <div class={classes!("flex", "flex-wrap", "w-full")}>
+            <div class={HOME_INPUT_GROUP_CLASSES.clone()}>
+                <label for="host-input" class={classes!(HOME_INPUT_LABEL_CLASSES.clone())}>{"Host"}</label>
+                <input ref={host_input}
+                    class={classes!(HOME_INPUT_CLASSES.clone())}
+                    id="host-input"
+                    type="text"
+                    title={"Repository host"}
+                    placeholder={"https://github.com"}
+                    aria-label="RepositoryHost"
+                />
+            </div>
+            <div class={HOME_INPUT_GROUP_CLASSES.clone()}>
+                <label for="owner-input" class={classes!(HOME_INPUT_LABEL_CLASSES.clone())}>{"Owner"}</label>
+                <input ref={owner_input}
+                    class={classes!(HOME_INPUT_CLASSES.clone())}
+                    id="owner-input"
+                    type="text"
+                    title={"Repository owner"}
+                    placeholder={"hayas1"}
+                    aria-label="RepositoryOwner"
+                />
+            </div>
+            <div class={HOME_INPUT_GROUP_CLASSES.clone()}>
+                <label for="repo-input" class={classes!(HOME_INPUT_LABEL_CLASSES.clone())}>{"Repo"}</label>
+                <input ref={repo_input}
+                    class={classes!(HOME_INPUT_CLASSES.clone())}
+                    id="repo-input"
+                    type="text"
+                    title={"Repository name"}
+                    placeholder={"loc-viewer"}
+                    aria-label="RepositoryName"
+                />
+            </div>
+            <div class={HOME_INPUT_GROUP_CLASSES.clone()}>
+                <label for="sha-input" class={classes!(HOME_INPUT_LABEL_CLASSES.clone())}>{"SHA"}</label>
+                <input ref={sha_input}
+                    class={classes!(HOME_INPUT_CLASSES.clone())}
+                    id="sha-input"
+                    type="text"
+                    title={"SHA of the Repository to get statistics"}
+                    placeholder={"main"}
+                    aria-label="RepositorySHA"
+                />
+            </div>
+            <div class={HOME_INPUT_GROUP_CLASSES.clone()}>
+                <label for="path-input" class={classes!(HOME_INPUT_LABEL_CLASSES.clone())}>{"Path"}</label>
+                <input ref={path_input}
+                    class={classes!(HOME_INPUT_CLASSES.clone())}
+                    id="path-input"
+                    type="text"
+                    title={"Path of the repository to get statistics"}
+                    placeholder={"/"}
+                    aria-label="RepositoryPath"
+                />
+            </div>
+            <div class={classes!("py-2", "text-center", "pt-4", "w-full")}>
+                <button
+                    class={classes!(HOME_BUTTON_CLASSES.clone())}
+                    onclick={statistics}
+                    type="button"
+                    title={"Get statistics!"}
+                >
+                    { "Toukei" }
+                </button>
             </div>
         </div>
     })
