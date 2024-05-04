@@ -71,9 +71,8 @@ pub const REPOSITORY_INFO_BUTTON_CLASSES: Lazy<Classes> = Lazy::new(|| {
 
 #[function_component(Home)]
 pub fn home() -> HtmlResult {
-    let h1 = "Statistics about code";
-    let description =
-        "Input repository URL or information, to display statistics about code of the remote repositories.";
+    let h1 = "Statistics about the code";
+    let description = "Enter the repository URL or information, and view statistics about the code.";
     Ok(html! {
         <div class={classes!("p-2", "flex", "justify-center")}>
             <div class={classes!("p-6", "container", "rounded-xl", "max-w-screen-lg", "bg-white", "dark:text-teal-50", "dark:bg-teal-900")}>
