@@ -11,7 +11,7 @@ use crate::{
     github::repository::GitHubRepository,
 };
 
-use super::routes::{GoHome, Route};
+use super::{REPOSITORY, routes::{GoHome, Route}};
 
 pub const NAVBAR_INPUT_CLASSES: Lazy<Classes> = Lazy::new(|| {
     classes!(
@@ -114,7 +114,9 @@ pub fn navbar() -> HtmlResult {
                     </div>
                 </div>
                 <div class={classes!("inline-block", "text-right", "text-teal-200", "text-sm")}>
-                    <Icon icon_id={IconId::HeroiconsOutlineInformationCircle} title={"Information"}/>
+                    <a href={REPOSITORY}>
+                        <Icon icon_id={IconId::HeroiconsOutlineInformationCircle} title={"Information"}/>
+                    </a>
                 </div>
             </div>
         </nav>
