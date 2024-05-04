@@ -35,7 +35,7 @@ pub const REPOSITORY_INFO_INPUT_GROUP_CLASSES: Lazy<Classes> =
 pub const REPOSITORY_INFO_INPUT_LABEL_CLASSES: Lazy<Classes> =
     Lazy::new(|| classes!("w-20", "text-sm", "text-right", "text-teal-500", "dark:text-teal-50")); // TODO width
 pub const REPOSITORY_INFO_INPUT_ICON_CLASSES: Lazy<Classes> =
-    Lazy::new(|| classes!("h-5", "text-teal-500", "dark:text-teal-50")); // TODO better icon position
+    Lazy::new(|| classes!("h-5", "m-2", "text-teal-500", "dark:text-teal-50")); // TODO better icon position
 pub const REPOSITORY_INFO_INPUT_CLASSES: Lazy<Classes> = Lazy::new(|| {
     classes!(
         "ps-3",
@@ -50,7 +50,7 @@ pub const REPOSITORY_INFO_INPUT_CLASSES: Lazy<Classes> = Lazy::new(|| {
     )
 });
 
-pub const HOME_BUTTON_CLASSES: Lazy<Classes> = Lazy::new(|| {
+pub const REPOSITORY_INFO_BUTTON_CLASSES: Lazy<Classes> = Lazy::new(|| {
     classes!(
         "p-2",
         "bg-gradient-to-r",
@@ -288,7 +288,7 @@ pub fn repo_info_forms() -> HtmlResult {
             </div>
             <div class={classes!("py-2", "text-center", "pt-4", "w-full")}>
                 <button
-                    class={classes!(HOME_BUTTON_CLASSES.clone())}
+                    class={classes!(REPOSITORY_INFO_BUTTON_CLASSES.clone())}
                     onclick={statistics}
                     type="button"
                     title={"Get statistics!"}
