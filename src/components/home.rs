@@ -40,11 +40,11 @@ pub const REPOSITORY_INFO_INPUT_CLASSES: Lazy<Classes> = Lazy::new(|| {
     classes!(
         "ps-3",
         "appearance-none",
-        "bg-transparent",
         "border-none",
         "w-full",
         "text-teal-700",
         "dark:text-teal-50",
+        "rounded-sm",
         "leading-tight",
         "focus:outline-none"
     )
@@ -204,7 +204,7 @@ pub fn repo_info_forms() -> HtmlResult {
             <div class={REPOSITORY_INFO_INPUT_GROUP_CLASSES.clone()}>
                 <label for="host-input" class={classes!(REPOSITORY_INFO_INPUT_LABEL_CLASSES.clone())}>{"Host"}</label>
                 <input ref={host_input}
-                    class={classes!(REPOSITORY_INFO_INPUT_CLASSES.clone())}
+                    class={classes!(REPOSITORY_INFO_INPUT_CLASSES.clone(), "bg-transparent")}
                     id="host-input"
                     type="text"
                     title={"Repository host"}
@@ -218,7 +218,7 @@ pub fn repo_info_forms() -> HtmlResult {
             <div class={REPOSITORY_INFO_INPUT_GROUP_CLASSES.clone()}>
                 <label for="owner-input" class={classes!(REPOSITORY_INFO_INPUT_LABEL_CLASSES.clone())}>{"Owner"}</label>
                 <input ref={owner_input}
-                    class={classes!(REPOSITORY_INFO_INPUT_CLASSES.clone())}
+                    class={classes!(REPOSITORY_INFO_INPUT_CLASSES.clone(), "bg-teal-50", "dark:bg-teal-800")}
                     id="owner-input"
                     type="text"
                     title={"Repository owner"}
@@ -232,7 +232,7 @@ pub fn repo_info_forms() -> HtmlResult {
             <div class={REPOSITORY_INFO_INPUT_GROUP_CLASSES.clone()}>
                 <label for="repo-input" class={classes!(REPOSITORY_INFO_INPUT_LABEL_CLASSES.clone())}>{"Repo"}</label>
                 <input ref={repo_input}
-                    class={classes!(REPOSITORY_INFO_INPUT_CLASSES.clone())}
+                    class={classes!(REPOSITORY_INFO_INPUT_CLASSES.clone(), "bg-teal-50", "dark:bg-teal-800")}
                     id="repo-input"
                     type="text"
                     title={"Repository name"}
@@ -246,7 +246,7 @@ pub fn repo_info_forms() -> HtmlResult {
             <div class={REPOSITORY_INFO_INPUT_GROUP_CLASSES.clone()}>
                 <label for="sha-input" class={classes!(REPOSITORY_INFO_INPUT_LABEL_CLASSES.clone())}>{"SHA"}</label>
                 <input ref={sha_input}
-                    class={classes!(REPOSITORY_INFO_INPUT_CLASSES.clone())}
+                    class={classes!(REPOSITORY_INFO_INPUT_CLASSES.clone(), "bg-transparent")}
                     id="sha-input"
                     type="text"
                     title={"SHA of the Repository to get statistics"}
@@ -260,7 +260,7 @@ pub fn repo_info_forms() -> HtmlResult {
             <div class={REPOSITORY_INFO_INPUT_GROUP_CLASSES.clone()}>
                 <label for="paths-input" class={classes!(REPOSITORY_INFO_INPUT_LABEL_CLASSES.clone())}>{"Paths"}</label>
                 <input ref={paths_input}
-                    class={classes!(REPOSITORY_INFO_INPUT_CLASSES.clone())}
+                    class={classes!(REPOSITORY_INFO_INPUT_CLASSES.clone(), "bg-transparent")}
                     id="paths-input"
                     type="text"
                     title={"Paths of the repository to get statistics"}

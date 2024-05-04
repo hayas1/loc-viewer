@@ -1,4 +1,3 @@
-use once_cell::sync::Lazy;
 use yew::prelude::*;
 use yew_autoprops::autoprops;
 use yew_router::prelude::*;
