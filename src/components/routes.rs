@@ -1,7 +1,8 @@
 use yew::prelude::*;
+use yew_autoprops::autoprops;
 use yew_router::prelude::*;
 
-use super::{home::Home, navbar::Navbar, statistics::Statistics};
+use super::{home::Home, navbar::Navbar, statistics::Statistics, BASENAME};
 
 #[derive(Clone, Routable, PartialEq)]
 pub enum Route {
@@ -23,35 +24,48 @@ impl Route {
     }
 }
 
+#[autoprops]
 #[function_component(Main)]
 pub fn main() -> HtmlResult {
     Ok(html! {
-        <BrowserRouter basename="/loc-viewer/"> // TODO do not hard code basename
+        <BrowserRouter basename={BASENAME}>
             <Navbar/>
             <Switch<Route> render={Route::switch} />
         </BrowserRouter>
     })
 }
 
+#[autoprops]
+#[function_component(GoHome)]
+pub fn go_home(navigator: &Option<Navigator>, html: &Html) -> HtmlResult {
+    Ok(html! {
+        if let Some(nav) = navigator.clone() {
+            <button type="none" onclick={Callback::from(move |_| nav.push(&Route::Home))}>{ html.clone() }</button>
+        } else {
+            <a href={BASENAME}>{ html.clone() }</a>
+        }
+    })
+}
+
+#[autoprops]
 #[function_component(NotFound)]
 pub fn not_found() -> HtmlResult {
-    let Some(navigator) = use_navigator() else {
-        return Ok(html! { <RouterUnavailable/> });
-    };
-    let on_click = Callback::from(move |_| navigator.push(&Route::Home));
+    let navigator = use_navigator();
     Ok(html! {
         <div>
             <h1>{ "404" }</h1>
-            <button onclick={on_click}>{ "Go Home" }</button>
+            <GoHome navigator={navigator} html={ "Go Home" }/>
         </div>
     })
 }
 
+#[autoprops]
 #[function_component(RouterUnavailable)]
 pub fn router_unavailable() -> HtmlResult {
     Ok(html! {
         <div>
             <h1>{ "Router Unavailable" }</h1>
+            <GoHome navigator={None} html={ "Go Home" }/>
         </div>
     })
 }

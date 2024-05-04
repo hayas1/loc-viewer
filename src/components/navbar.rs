@@ -11,7 +11,7 @@ use crate::{
     github::repository::GitHubRepository,
 };
 
-use super::routes::Route;
+use super::routes::{GoHome, Route};
 
 pub const NAVBAR_INPUT_CLASSES: Lazy<Classes> = Lazy::new(|| {
     classes!(
@@ -51,11 +51,13 @@ pub const NAVBAR_BUTTON_CLASSES: Lazy<Classes> = Lazy::new(|| {
 #[autoprops]
 #[function_component(Logo)]
 pub fn logo() -> HtmlResult {
-    Ok(html! {
+    let navigator = use_navigator();
+    let logo_html = html! {
         <span class={classes!("font-semibold", "text-xl", "tracking-tight")}>
             { "logo" }
         </span>
-    })
+    };
+    Ok(html! {<GoHome navigator={navigator} html={logo_html}/>})
 }
 
 #[autoprops]
