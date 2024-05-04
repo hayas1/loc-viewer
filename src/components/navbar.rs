@@ -45,6 +45,16 @@ pub const NAVBAR_BUTTON_CLASSES: Lazy<Classes> = Lazy::new(|| {
 });
 
 #[autoprops]
+#[function_component(Logo)]
+pub fn logo() -> HtmlResult {
+    Ok(html! {
+        <span class={classes!("font-semibold", "text-xl", "tracking-tight")}>
+            { "logo" }
+        </span>
+    })
+}
+
+#[autoprops]
 #[function_component(Navbar)]
 pub fn navbar() -> HtmlResult {
     let Some(navigator) = use_navigator() else {
@@ -86,11 +96,10 @@ pub fn navbar() -> HtmlResult {
     };
 
     Ok(html! {
-        // base: https://v1.tailwindcss.com/components/navigation#responsive-header
         <nav class={classes!("flex", "items-center", "flex-wrap", "text-white", "bg-teal-600", "dark:bg-teal-900", "py-3", "px-6")}>
             <div class={classes!("flex", "justify-between", "items-center", "w-full")}>
                 <div class={classes!("inline-block", "text-center")}>
-                    {"logo"}
+                    <Logo/>
                 </div>
                 <div class={classes!("inline-block", "justify-center", "w-full")}>
                     <div class={classes!("flex", "justify-center", "text-center")}>
