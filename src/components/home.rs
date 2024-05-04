@@ -12,7 +12,7 @@ use crate::{
     github::repository::GitHubRepository,
 };
 
-pub const NAVBAR_INPUT_CLASSES: Lazy<Classes> = Lazy::new(|| {
+pub const REPOSITORY_URL_INPUT_CLASSES: Lazy<Classes> = Lazy::new(|| {
     classes!(
         "appearance-none",
         "bg-teal-50",
@@ -30,11 +30,13 @@ pub const NAVBAR_INPUT_CLASSES: Lazy<Classes> = Lazy::new(|| {
     )
 });
 
-pub const HOME_INPUT_GROUP_CLASSES: Lazy<Classes> =
+pub const REPOSITORY_INFO_INPUT_GROUP_CLASSES: Lazy<Classes> =
     Lazy::new(|| classes!("pt-4", "h-10", "w-full", "flex", "items-center", "border-b", "border-teal-500"));
-pub const HOME_INPUT_LABEL_CLASSES: Lazy<Classes> =
+pub const REPOSITORY_INFO_INPUT_LABEL_CLASSES: Lazy<Classes> =
     Lazy::new(|| classes!("w-16", "text-right", "text-teal-500", "dark:text-teal-50")); // TODO width
-pub const HOME_INPUT_CLASSES: Lazy<Classes> = Lazy::new(|| {
+pub const REPOSITORY_INFO_INPUT_ICON_CLASSES: Lazy<Classes> =
+    Lazy::new(|| classes!("h-4", "text-teal-500", "dark:text-teal-50")); // TODO better icon position
+pub const REPOSITORY_INFO_INPUT_CLASSES: Lazy<Classes> = Lazy::new(|| {
     classes!(
         "ps-3",
         "appearance-none",
@@ -129,7 +131,7 @@ pub fn repo_url_bar() -> HtmlResult {
                     class={classes!("absolute", "text-teal-600", "dark:text-teal-50", "m-1")}
                 />
                 <input ref={url_input}
-                    class={classes!("ps-8", NAVBAR_INPUT_CLASSES.clone())}
+                    class={classes!("ps-8", REPOSITORY_URL_INPUT_CLASSES.clone())}
                     onchange={submit}
                     type="text"
                     placeholder={placeholder}
@@ -193,60 +195,75 @@ pub fn repo_info_forms() -> HtmlResult {
 
     Ok(html! {
         <div class={classes!("flex", "flex-wrap", "w-full")}>
-            <div class={HOME_INPUT_GROUP_CLASSES.clone()}>
-                <label for="host-input" class={classes!(HOME_INPUT_LABEL_CLASSES.clone())}>{"Host"}</label>
+            <div class={REPOSITORY_INFO_INPUT_GROUP_CLASSES.clone()}>
+                <label for="host-input" class={classes!(REPOSITORY_INFO_INPUT_LABEL_CLASSES.clone())}>{"Host"}</label>
                 <input ref={host_input}
-                    class={classes!(HOME_INPUT_CLASSES.clone())}
+                    class={classes!(REPOSITORY_INFO_INPUT_CLASSES.clone())}
                     id="host-input"
                     type="text"
                     title={"Repository host"}
                     placeholder={"https://github.com"}
                     aria-label="RepositoryHost"
                 />
+                <div class={classes!("relative")}>
+                    <Icon icon_id={IconId::OcticonsMarkGithub16} class={classes!(REPOSITORY_INFO_INPUT_ICON_CLASSES.clone())}/>
+                </div>
             </div>
-            <div class={HOME_INPUT_GROUP_CLASSES.clone()}>
-                <label for="owner-input" class={classes!(HOME_INPUT_LABEL_CLASSES.clone())}>{"Owner"}</label>
+            <div class={REPOSITORY_INFO_INPUT_GROUP_CLASSES.clone()}>
+                <label for="owner-input" class={classes!(REPOSITORY_INFO_INPUT_LABEL_CLASSES.clone())}>{"Owner"}</label>
                 <input ref={owner_input}
-                    class={classes!(HOME_INPUT_CLASSES.clone())}
+                    class={classes!(REPOSITORY_INFO_INPUT_CLASSES.clone())}
                     id="owner-input"
                     type="text"
                     title={"Repository owner"}
                     placeholder={"hayas1"}
                     aria-label="RepositoryOwner"
                 />
+                <div class={classes!("relative")}>
+                    <Icon icon_id={IconId::OcticonsOrganization16} class={classes!(REPOSITORY_INFO_INPUT_ICON_CLASSES.clone())}/>
+                </div>
             </div>
-            <div class={HOME_INPUT_GROUP_CLASSES.clone()}>
-                <label for="repo-input" class={classes!(HOME_INPUT_LABEL_CLASSES.clone())}>{"Repo"}</label>
+            <div class={REPOSITORY_INFO_INPUT_GROUP_CLASSES.clone()}>
+                <label for="repo-input" class={classes!(REPOSITORY_INFO_INPUT_LABEL_CLASSES.clone())}>{"Repo"}</label>
                 <input ref={repo_input}
-                    class={classes!(HOME_INPUT_CLASSES.clone())}
+                    class={classes!(REPOSITORY_INFO_INPUT_CLASSES.clone())}
                     id="repo-input"
                     type="text"
                     title={"Repository name"}
                     placeholder={"loc-viewer"}
                     aria-label="RepositoryName"
                 />
+                <div class={classes!("relative")}>
+                    <Icon icon_id={IconId::OcticonsRepo16} class={classes!(REPOSITORY_INFO_INPUT_ICON_CLASSES.clone())}/>
+                </div>
             </div>
-            <div class={HOME_INPUT_GROUP_CLASSES.clone()}>
-                <label for="sha-input" class={classes!(HOME_INPUT_LABEL_CLASSES.clone())}>{"SHA"}</label>
+            <div class={REPOSITORY_INFO_INPUT_GROUP_CLASSES.clone()}>
+                <label for="sha-input" class={classes!(REPOSITORY_INFO_INPUT_LABEL_CLASSES.clone())}>{"SHA"}</label>
                 <input ref={sha_input}
-                    class={classes!(HOME_INPUT_CLASSES.clone())}
+                    class={classes!(REPOSITORY_INFO_INPUT_CLASSES.clone())}
                     id="sha-input"
                     type="text"
                     title={"SHA of the Repository to get statistics"}
                     placeholder={"main"}
                     aria-label="RepositorySHA"
                 />
+                <div class={classes!("relative")}>
+                    <Icon icon_id={IconId::OcticonsGitCommit16} class={classes!(REPOSITORY_INFO_INPUT_ICON_CLASSES.clone())}/>
+                </div>
             </div>
-            <div class={HOME_INPUT_GROUP_CLASSES.clone()}>
-                <label for="path-input" class={classes!(HOME_INPUT_LABEL_CLASSES.clone())}>{"Path"}</label>
+            <div class={REPOSITORY_INFO_INPUT_GROUP_CLASSES.clone()}>
+                <label for="path-input" class={classes!(REPOSITORY_INFO_INPUT_LABEL_CLASSES.clone())}>{"Path"}</label>
                 <input ref={path_input}
-                    class={classes!(HOME_INPUT_CLASSES.clone())}
+                    class={classes!(REPOSITORY_INFO_INPUT_CLASSES.clone())}
                     id="path-input"
                     type="text"
                     title={"Path of the repository to get statistics"}
                     placeholder={"/"}
                     aria-label="RepositoryPath"
                 />
+                <div class={classes!("relative")}>
+                    <Icon icon_id={IconId::OcticonsFileDirectoryOpenFill16} class={classes!(REPOSITORY_INFO_INPUT_ICON_CLASSES.clone())}/>
+                </div>
             </div>
             <div class={classes!("py-2", "text-center", "pt-4", "w-full")}>
                 <button
