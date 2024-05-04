@@ -2,7 +2,12 @@ use yew::prelude::*;
 use yew_autoprops::autoprops;
 use yew_router::prelude::*;
 
-use super::{home::Home, navbar::Navbar, statistics::Statistics, BASENAME};
+use super::{
+    background::{Background, Navbar},
+    home::Home,
+    statistics::Statistics,
+    BASENAME,
+};
 
 #[derive(Clone, Routable, PartialEq)]
 pub enum Route {
@@ -34,17 +39,6 @@ pub fn main() -> HtmlResult {
                 <Switch<Route> render={Route::switch} />
             </Background>
         </BrowserRouter>
-    })
-}
-
-#[autoprops]
-#[function_component(Background)]
-pub fn background(children: &Children) -> HtmlResult {
-    let classes = classes!("min-h-screen", "bg-teal-0", "bg-teal-50", "dark:bg-teal-950");
-    Ok(html! {
-        <div class={classes}>
-            { children.clone() }
-        </div>
     })
 }
 

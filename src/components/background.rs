@@ -57,3 +57,14 @@ pub fn navbar() -> HtmlResult {
         </nav>
     })
 }
+
+#[autoprops]
+#[function_component(Background)]
+pub fn background(children: &Children) -> HtmlResult {
+    let classes = classes!("min-h-screen", "bg-teal-0", "bg-teal-50", "dark:bg-teal-950");
+    Ok(html! {
+        <div class={classes}>
+            { children.clone() }
+        </div>
+    })
+}
