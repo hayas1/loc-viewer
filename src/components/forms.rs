@@ -13,7 +13,7 @@ use crate::{
 
 #[autoprops]
 #[function_component(RepoUrlBar)]
-pub fn repo_url_bar() -> HtmlResult {
+pub fn repo_url_bar(#[prop_or_default] id: &String) -> HtmlResult {
     let placeholder = "https://github.com/hayas1/loc-viewer";
 
     let navigator = use_navigator();
@@ -49,6 +49,7 @@ pub fn repo_url_bar() -> HtmlResult {
                     class={classes!("absolute", "text-teal-600", "dark:text-teal-50", "m-1")}
                 />
                 <input ref={url_input}
+                    id={id.clone()}
                     class={classes!(
                         "ps-8", "appearance-none", "bg-teal-50", "dark:bg-teal-800",
                         "border", "border-teal-700", "text-teal-900", "dark:text-teal-50", "text-sm",
