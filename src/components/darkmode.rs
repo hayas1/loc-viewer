@@ -3,9 +3,9 @@ use yew::prelude::*;
 use yew_autoprops::autoprops;
 use yew_icons::{Icon, IconId};
 
-use crate::error::Result;
+use crate::error::{render::BrowserError, Result};
 
-use super::STORAGE_KEY_DARKMODE;
+use super::{routes::InvalidContext, STORAGE_KEY_DARKMODE};
 
 #[derive(Debug, Clone, Eq, PartialEq)]
 /// TODO use_darkmode hook
@@ -14,7 +14,11 @@ pub enum DarkmodeConfig {
     Dark,
     System,
 }
-
+impl Default for DarkmodeConfig {
+    fn default() -> Self {
+        Self::System
+    }
+}
 impl DarkmodeConfig {
     fn read_local_storage() -> Option<bool> {
         LocalStorage::get(STORAGE_KEY_DARKMODE).ok()
@@ -67,13 +71,18 @@ pub enum Theme {
     Light,
     Dark,
 }
+impl Default for Theme {
+    fn default() -> Self {
+        Self::Light
+    }
+}
 impl Theme {
     fn read_system() -> Result<bool> {
         let query = "(prefers-color-scheme: dark)";
         let system = gloo::utils::window()
             .match_media(query)
-            .map_err(|_| anyhow::anyhow!("Failed match media query"))? // TODO error handling
-            .ok_or_else(|| anyhow::anyhow!("Do not get MediaQueryList"))? // TODO error handling
+            .map_err(|_| anyhow::anyhow!(BrowserError::FailedMatchMediaQuery))?
+            .ok_or_else(|| anyhow::anyhow!(BrowserError::NullMediaQueryList))?
             .matches();
         Ok(system)
     }
@@ -126,7 +135,7 @@ impl Reducible for Theme {
 #[autoprops]
 #[function_component(NavIconDarkmode)]
 pub fn nav_icon_darkmode() -> HtmlResult {
-    let theme = use_context::<UseReducerHandle<Theme>>().unwrap(); // TODO unreachable
+    let theme = use_context::<UseReducerHandle<Theme>>().map(|t| (&*t).clone()).unwrap_or_default();
     let current = DarkmodeConfig::get();
 
     Ok(html! {
@@ -157,7 +166,11 @@ pub fn nav_icon_darkmode() -> HtmlResult {
 #[autoprops]
 #[function_component(NavIconDarkmodeSelect)]
 pub fn nav_icon_darkmode_select(config: &DarkmodeConfig, current: &DarkmodeConfig) -> HtmlResult {
-    let theme = use_context::<UseReducerHandle<Theme>>().unwrap(); // TODO unreachable
+    let Some(theme) = use_context::<UseReducerHandle<Theme>>() else {
+        return Ok(html! {
+            <InvalidContext/>
+        });
+    };
 
     let save = {
         let (theme, config) = (theme.clone(), config.clone());

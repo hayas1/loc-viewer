@@ -63,9 +63,9 @@ pub fn background(children: &Children) -> HtmlResult {
 #[autoprops]
 #[function_component(Screen)]
 pub fn screen(children: &Children) -> HtmlResult {
-    let theme = use_context::<UseReducerHandle<Theme>>().unwrap(); // TODO unreachable
+    let class = use_context::<UseReducerHandle<Theme>>().map(|t| t.class()).unwrap_or_else(|| Theme::default().class());
     Ok(html! {
-        <div class={classes!("flex", "flex-col", "min-h-screen", theme.class())}>
+        <div class={classes!("flex", "flex-col", "min-h-screen", class)}>
             <div class={classes!("flex-1", BG_THEME.clone())}>
                 { children.clone() }
             </div>

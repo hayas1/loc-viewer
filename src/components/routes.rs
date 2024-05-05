@@ -86,3 +86,16 @@ pub fn router_unavailable() -> HtmlResult {
         </div>
     })
 }
+
+#[autoprops]
+#[function_component(InvalidContext)]
+pub fn invalid_context() -> HtmlResult {
+    Ok(html! {
+        <div>
+            <h1>{ "Invalid Context" }</h1>
+            <GoHome navigator={None}>
+                <span>{ "Go Home" }</span>
+            </GoHome>
+        </div>
+    })
+}
