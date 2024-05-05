@@ -4,7 +4,7 @@ use yew_router::prelude::*;
 
 use super::{
     background::{Background, Navbar, Screen},
-    darkmode::Darkmode,
+    darkmode::Theme,
     home::Home,
     statistics::Statistics,
     BASENAME,
@@ -33,17 +33,17 @@ impl Route {
 #[autoprops]
 #[function_component(Main)]
 pub fn main() -> HtmlResult {
-    let ctx = use_reducer(|| Darkmode::get()); // TODO struct Context
+    let ctx = use_reducer(|| Theme::get()); // TODO struct Context
     Ok(html! {
         <BrowserRouter basename={BASENAME}>
-            <ContextProvider<UseReducerHandle<Darkmode>> context={ctx}>
+            <ContextProvider<UseReducerHandle<Theme>> context={ctx}>
                 <Screen>
                     <Navbar/>
                     <Background>
                         <Switch<Route> render={Route::switch} />
                     </Background>
                 </Screen>
-            </ContextProvider<UseReducerHandle<Darkmode>>>
+            </ContextProvider<UseReducerHandle<Theme>>>
         </BrowserRouter>
     })
 }

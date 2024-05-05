@@ -4,7 +4,7 @@ use yew_autoprops::autoprops;
 use yew_router::hooks::use_navigator;
 
 use super::{
-    darkmode::{Darkmode, NavIconDarkmode},
+    darkmode::{NavIconDarkmode, Theme},
     home::RepoUrlBar,
     routes::GoHome,
     REPOSITORY,
@@ -63,7 +63,7 @@ pub fn background(children: &Children) -> HtmlResult {
 #[autoprops]
 #[function_component(Screen)]
 pub fn screen(children: &Children) -> HtmlResult {
-    let theme = use_context::<UseReducerHandle<Darkmode>>().unwrap(); // TODO unreachable
+    let theme = use_context::<UseReducerHandle<Theme>>().unwrap(); // TODO unreachable
     Ok(html! {
         <div class={classes!("flex", "flex-col", "min-h-screen", theme.class())}>
             <div class={classes!("flex-1", BG_THEME.clone())}>

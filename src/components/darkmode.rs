@@ -41,8 +41,8 @@ impl DarkmodeConfig {
         Ok(self)
     }
 
-    pub fn darkmode(&self) -> Darkmode {
-        Darkmode::from_config(self)
+    pub fn theme(&self) -> Theme {
+        Theme::from_config(self)
     }
 
     pub fn icon_id(&self) -> IconId {
@@ -63,12 +63,11 @@ impl DarkmodeConfig {
 }
 
 #[derive(Debug, Clone, Eq, PartialEq)]
-/// TODO use_darkmode hook
-pub enum Darkmode {
+pub enum Theme {
     Light,
     Dark,
 }
-impl Darkmode {
+impl Theme {
     fn read_system() -> Result<bool> {
         let query = "(prefers-color-scheme: dark)";
         let system = gloo::utils::window()
@@ -116,18 +115,18 @@ impl Darkmode {
     }
 }
 
-impl Reducible for Darkmode {
+impl Reducible for Theme {
     type Action = DarkmodeConfig;
 
     fn reduce(self: std::rc::Rc<Self>, action: Self::Action) -> std::rc::Rc<Self> {
-        action.darkmode().into()
+        action.theme().into()
     }
 }
 
 #[autoprops]
 #[function_component(NavIconDarkmode)]
 pub fn nav_icon_darkmode() -> HtmlResult {
-    let theme = use_context::<UseReducerHandle<Darkmode>>().unwrap(); // TODO unreachable
+    let theme = use_context::<UseReducerHandle<Theme>>().unwrap(); // TODO unreachable
     let current = DarkmodeConfig::get();
 
     Ok(html! {
@@ -158,7 +157,7 @@ pub fn nav_icon_darkmode() -> HtmlResult {
 #[autoprops]
 #[function_component(NavIconDarkmodeSelect)]
 pub fn nav_icon_darkmode_select(config: &DarkmodeConfig, current: &DarkmodeConfig) -> HtmlResult {
-    let theme = use_context::<UseReducerHandle<Darkmode>>().unwrap(); // TODO unreachable
+    let theme = use_context::<UseReducerHandle<Theme>>().unwrap(); // TODO unreachable
 
     let save = {
         let (theme, config) = (theme.clone(), config.clone());
