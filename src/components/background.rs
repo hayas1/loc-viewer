@@ -78,7 +78,7 @@ pub fn screen(children: &Children) -> HtmlResult {
 #[function_component(Footer)]
 pub fn footer() -> HtmlResult {
     Ok(html! {
-        <footer class={classes!(BG_THEME.clone(), "text-center", "p-4")}>
+        <footer class={classes!(BG_THEME.clone(), "text-xs", "text-center", "p-4")}>
             <p>
                 { "Powered by " }
                 <a href={REPOSITORY}
