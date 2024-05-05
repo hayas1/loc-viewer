@@ -1,5 +1,6 @@
 pub mod background;
 pub mod darkmode;
+pub mod forms;
 pub mod home;
 pub mod routes;
 pub mod statistics;

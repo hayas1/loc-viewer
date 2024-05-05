@@ -5,7 +5,7 @@ use yew_router::hooks::use_navigator;
 
 use super::{
     darkmode::{NavIconDarkmode, Theme},
-    home::RepoUrlBar,
+    forms::RepoUrlBar,
     routes::GoHome,
     REPOSITORY,
 };
