@@ -138,13 +138,23 @@ pub fn nav_icon_darkmode() -> HtmlResult {
     let theme = use_context::<UseReducerHandle<Theme>>().map(|t| (&*t).clone()).unwrap_or_default();
     let current = DarkmodeConfig::get();
 
+    let dropdown = use_state(|| false);
+    let apparent = {
+        let dropdown = dropdown.clone();
+        Callback::from(move |_| dropdown.set(true))
+    };
+    let hidden = {
+        let dropdown = dropdown.clone();
+        Callback::from(move |_| dropdown.set(false))
+    };
+
     Ok(html! {
-        <div class={classes!("group")}>
-            <button class={classes!()}>
+        <div class={classes!("")}>
+            <button class={classes!()} onclick={apparent}>
                 <Icon icon_id={theme.icon_id()} title={theme.title()}/>
             </button>
-            <div class={classes!("hidden", "group-focus-within:block")}>
-                <div class={classes!("flex", "justify-end", "absolute", "top-0", "left-0", "w-full", "h-full")}>
+            if *dropdown {
+                <div onclick={hidden} class={classes!("flex", "justify-end", "absolute", "top-0", "left-0", "w-full", "h-full", "min-w-screen", "min-h-screen")}>
                     <div class={classes!("block", "mt-14", "mx-4")}>
                         <ul class={classes!("container", "rounded-lg", "text-base", "border-2",
                             "text-teal-700", "bg-teal-50", "border-teal-100",
@@ -158,7 +168,7 @@ pub fn nav_icon_darkmode() -> HtmlResult {
                         </ul>
                     </div>
                 </div>
-            </div>
+            }
         </div>
     })
 }
