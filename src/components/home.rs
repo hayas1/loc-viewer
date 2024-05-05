@@ -228,9 +228,7 @@ pub fn repo_info_forms() -> HtmlResult {
                             placeholder={placeholder}
                             aria-label={aria_label}
                         />
-                        <div class={classes!("relative")}>
-                            <Icon icon_id={icon} class={classes!("h-5", "m-2", "text-teal-500", "dark:text-teal-50")}/>
-                        </div>
+                        <Icon icon_id={icon} class={classes!("h-5", "m-2", "text-teal-500", "dark:text-teal-50")}/>
                     </div>
                 }
             })}
