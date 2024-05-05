@@ -1,10 +1,14 @@
 use once_cell::sync::Lazy;
 use yew::prelude::*;
 use yew_autoprops::autoprops;
-use yew_icons::{Icon, IconId};
 use yew_router::hooks::use_navigator;
 
-use super::{home::RepoUrlBar, routes::GoHome, REPOSITORY};
+use super::{
+    darkmode::{Darkmode, NavIconDarkmode},
+    home::RepoUrlBar,
+    routes::GoHome,
+    REPOSITORY,
+};
 
 pub const BG_THEME: Lazy<Classes> =
     Lazy::new(|| classes!("text-teal-900", "dark:text-teal-50", "bg-teal-50", "dark:bg-teal-950"));
@@ -36,10 +40,10 @@ pub fn navbar() -> HtmlResult {
                 <div class={classes!("inline-block", "invisible", "md:visible", "px-8", "shrink", "w-full", "max-w-screen-md")}>
                     <RepoUrlBar/>
                 </div>
-                <div class={classes!("inline-block", "text-right", "text-teal-200", "text-sm")}>
-                    <a href={REPOSITORY}>
-                        <Icon icon_id={IconId::HeroiconsOutlineInformationCircle} title={"Information"}/>
-                    </a>
+                <div class={classes!("inline-block", "text-center", "flex", "items-end")}>
+                    <div class={classes!("text-teal-200", "text-sm")}>
+                        <NavIconDarkmode/>
+                    </div>
                 </div>
             </div>
         </nav>
@@ -59,8 +63,9 @@ pub fn background(children: &Children) -> HtmlResult {
 #[autoprops]
 #[function_component(Screen)]
 pub fn screen(children: &Children) -> HtmlResult {
+    let theme = use_context::<UseReducerHandle<Darkmode>>().unwrap(); // TODO unreachable
     Ok(html! {
-        <div class={classes!("flex", "flex-col", "min-h-screen")}>
+        <div class={classes!("flex", "flex-col", "min-h-screen", theme.class())}>
             <div class={classes!("flex-1", BG_THEME.clone())}>
                 { children.clone() }
             </div>
