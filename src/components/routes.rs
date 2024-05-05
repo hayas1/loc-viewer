@@ -3,7 +3,7 @@ use yew_autoprops::autoprops;
 use yew_router::prelude::*;
 
 use super::{
-    background::{Background, Navbar},
+    background::{Background, Footer, Navbar, Screen},
     home::Home,
     statistics::Statistics,
     BASENAME,
@@ -34,10 +34,12 @@ impl Route {
 pub fn main() -> HtmlResult {
     Ok(html! {
         <BrowserRouter basename={BASENAME}>
-            <Navbar/>
-            <Background>
-                <Switch<Route> render={Route::switch} />
-            </Background>
+            <Screen>
+                <Navbar/>
+                <Background>
+                    <Switch<Route> render={Route::switch} />
+                </Background>
+            </Screen>
         </BrowserRouter>
     })
 }
