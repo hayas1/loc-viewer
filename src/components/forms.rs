@@ -5,7 +5,7 @@ use yew_autoprops::autoprops;
 use yew_icons::{Icon, IconId};
 use yew_router::hooks::use_navigator;
 
-use super::routes::Route;
+use super::{routes::Route, statistics::ParamsModel};
 use crate::{
     error::{render::Unreachable, Result},
     github::repository::GitHubRepository,
@@ -77,7 +77,7 @@ pub fn repo_info_forms() -> HtmlResult {
         let (host_input, owner_input, repo_input) = (host_input.clone(), owner_input.clone(), repo_input.clone());
         let (sha_input, paths_input, excluded_input) = (sha_input.clone(), paths_input.clone(), excluded_input.clone());
         Callback::from(move |_| {
-            let route: Result<Route> = (|| {
+            let result: Result<(Route, ParamsModel)> = (|| {
                 let host = host_input
                     .cast::<HtmlInputElement>()
                     .ok_or_else(|| anyhow::anyhow!(Unreachable::DomMaybeChanged))?
@@ -96,25 +96,32 @@ pub fn repo_info_forms() -> HtmlResult {
                     .value();
                 let repo = if repo.is_empty() { "loc-viewer".to_string() } else { repo };
 
-                // TODO sha and paths and excluded
-                let _sha = sha_input
+                let sha = sha_input
                     .cast::<HtmlInputElement>()
                     .ok_or_else(|| anyhow::anyhow!(Unreachable::DomMaybeChanged))?
                     .value();
-                let _paths = paths_input
+                let sha = if sha.is_empty() { None } else { Some(sha) };
+                let paths = paths_input
                     .cast::<HtmlInputElement>()
                     .ok_or_else(|| anyhow::anyhow!(Unreachable::DomMaybeChanged))?
                     .value();
-                let _excluded = excluded_input
+                let paths = if paths.is_empty() { Vec::new() } else { vec![paths] };
+                // let paths = vec!["/src".to_string(), "/test".to_string()];
+                let excluded = excluded_input
                     .cast::<HtmlInputElement>()
                     .ok_or_else(|| anyhow::anyhow!(Unreachable::DomMaybeChanged))?
                     .value();
-
-                Ok(Route::Statistics { host, owner, repo })
+                let excluded = if excluded.is_empty() { Vec::new() } else { vec![excluded] };
+                Ok((Route::Statistics { host, owner, repo }, ParamsModel { sha, paths, excluded }))
             })();
-            match (navigator.clone(), route) {
+            match (navigator.clone(), result) {
                 (None, _) => gloo::console::error!("Navigator is not available"),
-                (Some(navigator), Ok(route)) => navigator.push(&route),
+                (Some(navigator), Ok((route, query))) => {
+                    match (|| navigator.push_with_query(&route, &query.into_query()?).map_err(anyhow::Error::from))() {
+                        Ok(()) => (),
+                        Err(err) => gloo::console::error!(err.to_string()), // TODO error handling
+                    }
+                }
                 (_, Err(err)) => gloo::console::error!(err.to_string()), // TODO error handling
             }
         })
