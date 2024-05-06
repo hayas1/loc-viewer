@@ -64,7 +64,7 @@ pub fn background(children: &Children) -> HtmlResult {
 
 #[autoprops]
 #[function_component(Pane)]
-pub fn pane(children: &Children, class: &Classes) -> HtmlResult {
+pub fn pane(children: &Children, #[prop_or_default] class: &Option<Classes>) -> HtmlResult {
     Ok(html! {
         <div class={classes!(PANE_THEME.clone(), class.clone())}>
             { children.clone() }
