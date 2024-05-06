@@ -14,6 +14,8 @@ pub const BG_THEME: Lazy<Classes> =
     Lazy::new(|| classes!("text-teal-900", "dark:text-teal-50", "bg-teal-50", "dark:bg-teal-950"));
 pub const BG_LINK_THEME: Lazy<Classes> =
     Lazy::new(|| classes!("text-teal-600", "dark:text-teal-400", "hover:text-teal-500"));
+pub const PANE_THEME: Lazy<Classes> =
+    Lazy::new(|| classes!("container", "rounded-xl", "bg-white", "dark:text-teal-50", "dark:bg-teal-900"));
 
 #[autoprops]
 #[function_component(Logo)]
@@ -55,6 +57,16 @@ pub fn navbar() -> HtmlResult {
 pub fn background(children: &Children) -> HtmlResult {
     Ok(html! {
         <div class={classes!(BG_THEME.clone())}>
+            { children.clone() }
+        </div>
+    })
+}
+
+#[autoprops]
+#[function_component(Pane)]
+pub fn pane(children: &Children, class: &Classes) -> HtmlResult {
+    Ok(html! {
+        <div class={classes!(PANE_THEME.clone(), class.clone())}>
             { children.clone() }
         </div>
     })

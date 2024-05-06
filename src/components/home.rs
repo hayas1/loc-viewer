@@ -2,7 +2,10 @@ use yew::prelude::*;
 use yew_autoprops::autoprops;
 use yew_icons::{Icon, IconId};
 
-use super::forms::{RepoInfoForms, RepoUrlBar};
+use super::{
+    background::Pane,
+    forms::{RepoInfoForms, RepoUrlBar},
+};
 
 #[autoprops]
 #[function_component(Home)]
@@ -11,7 +14,7 @@ pub fn home() -> HtmlResult {
     let description = "Enter the repository URL or information, and view statistics about the code.";
     Ok(html! {
         <div class={classes!("p-2", "flex", "justify-center")}>
-            <div class={classes!("p-6", "container", "rounded-xl", "max-w-screen-lg", "bg-white", "dark:text-teal-50", "dark:bg-teal-900")}>
+            <Pane class={classes!("p-6", "max-w-screen-lg")}>
                 <div class={classes!("flex", "items-center")}>
                     <Icon icon_id={IconId::HeroiconsOutlineClock} class={classes!("inline-block", "h-6")}/>
                     <h1 class={classes!("p-2", "text-teal-900", "dark:text-teal-50", "text-xl")}>
@@ -37,7 +40,7 @@ pub fn home() -> HtmlResult {
                         </div>
                     </div>
                 </div>
-            </div>
+            </Pane>
         </div>
     })
 }
