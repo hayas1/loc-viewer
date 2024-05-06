@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use crate::error::Result;
+use crate::error::{convert::Unreachable, Result};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Eq, PartialEq, Default, Serialize, Deserialize)]
@@ -46,8 +46,10 @@ impl ParamsModel {
     // TODO return Result<Vec<(String, String)>, Vec<(String, String)>>
     pub fn into_query(&self) -> Result<Vec<(String, String)>> {
         // TODO do not Self -> serde_json::Value -> Vec[(String, String)], but Self -> Vec[(String, String)]
-        let value = serde_json::to_value(self).map_err(anyhow::Error::from)?; // TODO unreachable
-        let map: HashMap<String, Vec<String>> = serde_json::from_value(value).map_err(anyhow::Error::from)?; // TODO unreachable
+        let value =
+            serde_json::to_value(self).map_err(|_| anyhow::anyhow!(Unreachable::StructShouldBeConvertToValue))?;
+        let map: HashMap<String, Vec<String>> =
+            serde_json::from_value(value).map_err(|_| anyhow::anyhow!(Unreachable::ParamsShouldBeConvertToQuery))?;
         let query = map.into_iter().flat_map(|(key, vs)| vs.into_iter().map(move |s| (key.clone(), s))).collect();
         Ok(query)
     }
@@ -59,8 +61,10 @@ impl ParamsModel {
         for (key, value) in query {
             map.entry(key).or_insert(Vec::new()).push(value);
         }
-        let value = serde_json::to_value(map).map_err(anyhow::Error::from)?; // TODO unreachable
-        let params = serde_json::from_value(value).map_err(anyhow::Error::from)?; // TODO unreachable
+        let value =
+            serde_json::to_value(map).map_err(|_| anyhow::anyhow!(Unreachable::StructShouldBeConvertToValue))?;
+        let params =
+            serde_json::from_value(value).map_err(|_| anyhow::anyhow!(Unreachable::QueryShouldBeConvertToParams))?;
         Ok(params)
     }
 }
