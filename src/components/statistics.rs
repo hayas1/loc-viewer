@@ -5,9 +5,9 @@ use yew_autoprops::autoprops;
 use yew_router::hooks::use_location;
 
 use super::{
+    background::{Pane, ResponsivePanesFrame},
     forms::{RepoInfoForms, RepoUrlBar},
     query_parameters::ParamsModel,
-    background::Pane,
     routes::RouterUnavailable,
 };
 use crate::github::repository::GitHubRepository;
@@ -21,28 +21,27 @@ pub fn statistics(host: &String, owner: &String, repo: &String) -> HtmlResult {
     let query = ParamsModel::from_query(&location.query::<Vec<(String, String)>>().unwrap());
     let repository = Arc::new(GitHubRepository::new(owner, repo));
     Ok(html! {
-        <div class={classes!("p-2", "flex", "justify-center")}>
-            <div class={classes!("pt-4", "flex", "flex-col", "justify-start", "items-center", "md:flex-row", "md:justify-center", "md:items-start", "gap-4", "max-w-screen-2xl")}>
-                <Pane class={classes!("p-6")}>
-                    <Table repository={repository}/>
-                </Pane>
-                <Pane class={classes!("p-6", "max-w-sm", "flex", "flex-col", "justify-start")}>
-                    <div class={classes!("h-full", "w-full", "flex", "flex-col", "justify-start")}>
-                        <label for="repository-url" class={classes!("w-full")}>{"URL"}</label>
-                        <div class={classes!("w-full", "pt-4")}>
-                            <RepoUrlBar id="repository-url"/>
-                        </div>
+        <ResponsivePanesFrame>
+            <Pane class={classes!("p-6", "grow", "w-full")}>
+                <p>{format!("{query:?}")}</p>
+                <Table repository={repository}/>
+            </Pane>
+            <Pane class={classes!("p-6", "max-w-sm", "flex", "flex-col", "justify-start")}>
+                <div class={classes!("h-full", "w-full", "flex", "flex-col", "justify-start")}>
+                    <label for="repository-url" class={classes!("w-full")}>{"URL"}</label>
+                    <div class={classes!("w-full", "pt-4")}>
+                        <RepoUrlBar id="repository-url"/>
                     </div>
-                    <p class={classes!("p-2", "text-teal-900", "dark:text-teal-50", "text-center")}>{"or"}</p>
-                    <div class={classes!("flex", "flex-col", "justify-start")}>
-                        <label for="repository-info">{"Information"}</label>
-                        <div class={classes!("w-full", "pt-4")}>
-                            <RepoInfoForms/>
-                        </div>
+                </div>
+                <p class={classes!("p-2", "text-teal-900", "dark:text-teal-50", "text-center")}>{"or"}</p>
+                <div class={classes!("flex", "flex-col", "justify-start")}>
+                    <label for="repository-info">{"Information"}</label>
+                    <div class={classes!("w-full", "pt-4")}>
+                        <RepoInfoForms/>
                     </div>
-                </Pane>
-            </div>
-        </div>
+                </div>
+            </Pane>
+        </ResponsivePanesFrame>
     })
 }
 

@@ -64,6 +64,18 @@ pub fn background(children: &Children) -> HtmlResult {
 }
 
 #[autoprops]
+#[function_component(ResponsivePanesFrame)]
+pub fn responsive_panes_frame(children: &Children) -> HtmlResult {
+    Ok(html! {
+        <div class={classes!("p-2", "flex", "justify-center")}>
+            <div class={classes!("pt-4", "flex", "flex-col", "justify-center", "items-center", "md:flex-row", "md:justify-center", "md:items-start", "gap-4", "max-w-screen-2xl")}>
+                { children.clone() }
+            </div>
+        </div>
+    })
+}
+
+#[autoprops]
 #[function_component(Pane)]
 pub fn pane(children: &Children, #[prop_or_default] class: &Option<Classes>) -> HtmlResult {
     Ok(html! {
