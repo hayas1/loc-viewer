@@ -24,7 +24,11 @@ pub fn statistics(host: &String, owner: &String, repo: &String) -> HtmlResult {
         <ResponsivePanesFrame>
             <Pane class={classes!("p-6", "grow", "w-full")}>
                 <p>{format!("{query:?}")}</p>
-                <Table repository={repository}/>
+                <div class="flex overflow-x-auto">
+                    <div class="flex-none w-10">
+                        <Table repository={repository}/>
+                    </div>
+                </div>
             </Pane>
             <Pane class={classes!("p-6", "max-w-sm", "flex", "flex-col", "justify-start")}>
                 <div class={classes!("h-full", "w-full", "flex", "flex-col", "justify-start")}>
