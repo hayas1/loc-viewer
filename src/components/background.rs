@@ -34,7 +34,8 @@ pub fn logo() -> HtmlResult {
 #[function_component(Navbar)]
 pub fn navbar() -> HtmlResult {
     Ok(html! {
-        <nav class={classes!("flex", "items-center", "flex-wrap", "text-teal-50", "bg-teal-600", "dark:bg-teal-950", "py-3", "px-6", "sticky", "top-0")}>
+        // TODO if we remove z-[100], navbar will be overlaid by another "absolute" element
+        <nav class={classes!("absolute", "z-[100]", "flex", "items-center", "flex-wrap", "text-teal-50", "bg-teal-600", "dark:bg-teal-950", "py-3", "px-6", "sticky", "top-0")}>
             <div class={classes!("flex", "justify-between", "items-center", "w-full")}>
                 <div class={classes!("inline-block", "text-center")}>
                     <Logo/>
