@@ -8,8 +8,8 @@ use super::{
 };
 
 #[autoprops]
-#[function_component(Home)]
-pub fn home() -> HtmlResult {
+#[function_component(HomePage)]
+pub fn home_page() -> HtmlResult {
     let h1 = "Statistics about the code";
     let description = "Enter the repository URL or information, and view statistics about the code.";
     Ok(html! {

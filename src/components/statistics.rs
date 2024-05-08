@@ -13,8 +13,8 @@ use super::{
 use crate::github::{repository::GitHubRepository, statistics::Statistics};
 
 #[autoprops]
-#[function_component(StatisticsView)]
-pub fn statistics_view(host: &String, owner: &String, repo: &String) -> HtmlResult {
+#[function_component(StatisticsPage)]
+pub fn statistics_page(host: &String, owner: &String, repo: &String) -> HtmlResult {
     let Some(location) = use_location() else {
         return Ok(html! { <RouterUnavailable/> });
     };

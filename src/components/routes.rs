@@ -5,8 +5,8 @@ use yew_router::prelude::*;
 use super::{
     background::{Background, Navbar, Screen},
     darkmode::Theme,
-    home::Home,
-    statistics::StatisticsView,
+    home::HomePage,
+    statistics::StatisticsPage,
     BASENAME,
 };
 
@@ -23,8 +23,8 @@ pub enum Route {
 impl Route {
     pub fn switch(self) -> Html {
         match self {
-            Route::Home => html! { <Home/> },
-            Route::Statistics { host, owner, repo } => html! { <StatisticsView {host} {owner} {repo}/> },
+            Route::Home => html! { <HomePage/> },
+            Route::Statistics { host, owner, repo } => html! { <StatisticsPage {host} {owner} {repo}/> },
             Route::NotFound => html! { <NotFound/> },
         }
     }
