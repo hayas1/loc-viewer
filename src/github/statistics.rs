@@ -12,6 +12,13 @@ pub struct Statistics {
     pub repository: GitHubRepository,
     pub languages: Languages,
 }
+impl Eq for Statistics {}
+impl PartialEq for Statistics {
+    // TODO Languages is not Eq, PartialEq
+    fn eq(&self, other: &Self) -> bool {
+        self.repository == other.repository && &*self.languages == &*other.languages
+    }
+}
 impl Statistics {
     pub async fn get(repository: GitHubRepository, config: &tokei::Config) -> Result<Self> {
         let languages = Self::get_statistics(&repository, config).await?;

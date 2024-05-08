@@ -6,7 +6,7 @@ use super::{
     background::{Background, Navbar, Screen},
     darkmode::Theme,
     home::Home,
-    statistics::Statistics,
+    statistics::StatisticsView,
     BASENAME,
 };
 
@@ -24,7 +24,7 @@ impl Route {
     pub fn switch(self) -> Html {
         match self {
             Route::Home => html! { <Home/> },
-            Route::Statistics { host, owner, repo } => html! { <Statistics {host} {owner} {repo}/> },
+            Route::Statistics { host, owner, repo } => html! { <StatisticsView {host} {owner} {repo}/> },
             Route::NotFound => html! { <NotFound/> },
         }
     }
