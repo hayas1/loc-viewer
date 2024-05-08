@@ -149,13 +149,15 @@ pub fn nav_icon_darkmode() -> HtmlResult {
     };
 
     Ok(html! {
-        <div class={classes!("")}>
-            <button class={classes!()} onclick={apparent}>
+        <div>
+            <button onclick={apparent}>
                 <Icon icon_id={theme.icon_id()} title={theme.title()}/>
             </button>
             if *dropdown {
                 // TODO Clicking outside the dropdown or on light/dark/system will close the dropdown, though, the latter is also achieved by `onclick={hidden}` here
-                <div onclick={hidden} class={classes!("flex", "justify-end", "absolute", "top-0", "left-0", "w-full", "h-full", "min-w-screen", "min-h-screen")}>
+                <div onclick={hidden} class={classes!("flex", "justify-end", "absolute",
+                    "top-0", "left-0", "w-full", "h-full", "min-w-screen", "min-h-screen"
+                )}>
                     <div class={classes!("block", "mt-14", "mx-4")}>
                         <ul class={classes!("container", "rounded-lg", "text-base", "border-2",
                             "text-teal-700", "bg-teal-50", "border-teal-100",

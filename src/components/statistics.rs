@@ -1,5 +1,6 @@
 use std::sync::Arc;
 
+use web_sys::HtmlInputElement;
 use yew::prelude::*;
 use yew_autoprops::autoprops;
 use yew_router::hooks::use_location;
@@ -10,7 +11,10 @@ use super::{
     query_parameters::ParamsModel,
     routes::RouterUnavailable,
 };
-use crate::github::{repository::GitHubRepository, statistics::Statistics};
+use crate::{
+    error::{render::Unreachable, Result},
+    github::{repository::GitHubRepository, statistics::Statistics},
+};
 
 #[autoprops]
 #[function_component(StatisticsPage)]
@@ -23,7 +27,6 @@ pub fn statistics_page(host: &String, owner: &String, repo: &String) -> HtmlResu
     Ok(html! {
         <ResponsivePanesFrame>
             <Pane class={classes!("p-6", "grow", "w-full")}>
-                <p>{format!("{query:?}")}</p>
                 <TableResult repository={repository}/>
             </Pane>
             <Pane class={classes!("p-6", "w-max", "max-w-xs", "flex", "flex-col", "justify-start")}>
@@ -79,6 +82,7 @@ pub fn table_result(repository: &Arc<GitHubRepository>) -> HtmlResult {
 #[autoprops]
 #[function_component(TableView)]
 pub fn table_view(statistics: &Arc<Statistics>) -> HtmlResult {
+    let caption_input = use_node_ref();
     let cell_pudding = classes!("px-4", "py-2");
     let leftmost = classes!("py-2", "sticky", "left-0"); // TODO long name language
     let table_header = classes!("text-teal-900", "bg-teal-50", "dark:text-teal-50", "dark:bg-teal-800");
@@ -86,6 +90,13 @@ pub fn table_view(statistics: &Arc<Statistics>) -> HtmlResult {
     let (cp, lm, th) = (cell_pudding.clone(), leftmost.clone(), table_header.clone());
     Ok(html! {
         <table class={classes!("table-auto")}>
+            <caption class={classes!("caption-top", "text-left")}>
+                <input ref={caption_input.clone()}
+                    disabled=true
+                    class={classes!("px-4", "appearance-none", "bg-transparent", "sticky", "left-0")}
+                    value="Statistics"
+                />
+            </caption>
             <thead>
                 <tr>
                     <th scope="col" class={classes!(lm.clone(), th.clone())}>{ "Language" }</th>
@@ -102,11 +113,31 @@ pub fn table_view(statistics: &Arc<Statistics>) -> HtmlResult {
                         html! {
                             <tr class={classes!("border-b")}>
                                 <th scope="row" class={classes!(lm.clone(), th.clone())}>{ language_type.to_string() }</th>
-                                <td class={classes!(cp.clone())}>{ language.reports.len() }</td>
-                                <td class={classes!(cp.clone())}>{ language.lines() }</td>
-                                <td class={classes!(cp.clone())}>{ language.code }</td>
-                                <td class={classes!(cp.clone())}>{ language.comments }</td>
-                                <td class={classes!(cp.clone())}>{ language.blanks }</td>
+                                <td class={classes!(cp.clone())}>
+                                    <TableCell caption_input={caption_input.clone()} language={language_type.to_string()} category="Files">
+                                        { language.reports.len() }
+                                    </TableCell>
+                                </td>
+                                <td class={classes!(cp.clone())}>
+                                    <TableCell caption_input={caption_input.clone()} language={language_type.to_string()} category="Lines">
+                                        { language.lines() }
+                                    </TableCell>
+                                </td>
+                                <td class={classes!(cp.clone())}>
+                                    <TableCell caption_input={caption_input.clone()} language={language_type.to_string()} category="Code">
+                                        { language.code }
+                                    </TableCell>
+                                </td>
+                                <td class={classes!(cp.clone())}>
+                                    <TableCell caption_input={caption_input.clone()} language={language_type.to_string()} category="Comments">
+                                        { language.comments }
+                                    </TableCell>
+                                </td>
+                                <td class={classes!(cp.clone())}>
+                                    <TableCell caption_input={caption_input.clone()} language={language_type.to_string()} category="Blanks">
+                                        { language.blanks }
+                                    </TableCell>
+                                </td>
                                 // <td>{ language.total() }</td>
                             </tr>
                         }
@@ -114,5 +145,33 @@ pub fn table_view(statistics: &Arc<Statistics>) -> HtmlResult {
                 }
             </tbody>
         </table>
+    })
+}
+
+#[autoprops]
+#[function_component(TableCell)]
+pub fn table_cell(caption_input: &NodeRef, language: &String, category: &String, children: &Children) -> HtmlResult {
+    let overwrite_caption = {
+        let caption_input = caption_input.clone();
+        let (language, category) = (language.clone(), category.clone());
+        Callback::from(move |_| {
+            let result: Result<_> = (|| {
+                let caption = caption_input
+                    .cast::<HtmlInputElement>()
+                    .ok_or_else(|| anyhow::anyhow!(Unreachable::DomMaybeChanged))?
+                    .set_value(&format!("{} {}", language.clone(), category.clone()));
+                Ok(caption)
+            })();
+            match result {
+                Ok(_) => {}
+                Err(err) => gloo::console::error!("error:", err.to_string()),
+            }
+        })
+    };
+
+    Ok(html! {
+        <button onclick={overwrite_caption}>
+            { children.clone() }
+        </button>
     })
 }
