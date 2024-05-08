@@ -68,7 +68,9 @@ pub fn background(children: &Children) -> HtmlResult {
 pub fn responsive_panes_frame(children: &Children) -> HtmlResult {
     Ok(html! {
         <div class={classes!("p-2", "flex", "justify-center")}>
-            <div class={classes!("pt-4", "flex", "flex-col", "justify-center", "items-center", "md:flex-row", "md:justify-center", "md:items-start", "gap-4", "max-w-screen-2xl")}>
+            <div class={classes!("pt-4", "flex", "flex-col", "justify-center", "items-center",
+                "md:flex-row", "md:justify-center", "md:items-start", "gap-4", "w-full", "max-w-screen-xl"
+            )}>
                 { children.clone() }
             </div>
         </div>

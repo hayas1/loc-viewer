@@ -24,8 +24,8 @@ pub fn statistics(host: &String, owner: &String, repo: &String) -> HtmlResult {
         <ResponsivePanesFrame>
             <Pane class={classes!("p-6", "grow", "w-full")}>
                 <p>{format!("{query:?}")}</p>
-                <div class="flex overflow-x-auto">
-                    <div class="flex-none w-10">
+                <div class={classes!("flex", "overflow-x-auto")}>
+                    <div class={classes!("flex-none", "w-10")}>
                         <Table repository={repository}/>
                     </div>
                 </div>
@@ -67,28 +67,28 @@ pub fn table(repository: &Arc<GitHubRepository>) -> HtmlResult {
     Ok(html! {
         match &(*result) {
             Some(Ok(statistics)) => html! {
-                <table class="table-auto">
+                <table class={classes!("table-auto")}>
                     <thead>
                         <tr>
-                            <th>{ "Language" }</th>
-                            <th>{ "Files" }</th>
-                            <th>{ "Lines" }</th>
-                            <th>{ "Code" }</th>
-                            <th>{ "Comments" }</th>
-                            <th>{ "Blanks" }</th>
+                            <th scope="col" class={classes!("px-4", "py-2")}>{ "Language" }</th>
+                            <th scope="col" class={classes!("px-4", "py-2")}>{ "Files" }</th>
+                            <th scope="col" class={classes!("px-4", "py-2")}>{ "Lines" }</th>
+                            <th scope="col" class={classes!("px-4", "py-2")}>{ "Code" }</th>
+                            <th scope="col" class={classes!("px-4", "py-2")}>{ "Comments" }</th>
+                            <th scope="col" class={classes!("px-4", "py-2")}>{ "Blanks" }</th>
                         </tr>
                     </thead>
                     <tbody>
                         {
                             for statistics.languages.iter().map(|(language_type, language)| {
                                 html! {
-                                    <tr>
-                                        <td>{ language_type.to_string() }</td>
-                                        <td>{ language.reports.len() }</td>
-                                        <td>{ language.lines() }</td>
-                                        <td>{ language.code }</td>
-                                        <td>{ language.comments }</td>
-                                        <td>{ language.blanks }</td>
+                                    <tr class={classes!("border-b")}>
+                                        <th scope="row" class={classes!("px-4", "py-2", "sticky", "left-0")}>{ language_type.to_string() }</th>
+                                        <td class={classes!("px-4", "py-2")}>{ language.reports.len() }</td>
+                                        <td class={classes!("px-4", "py-2")}>{ language.lines() }</td>
+                                        <td class={classes!("px-4", "py-2")}>{ language.code }</td>
+                                        <td class={classes!("px-4", "py-2")}>{ language.comments }</td>
+                                        <td class={classes!("px-4", "py-2")}>{ language.blanks }</td>
                                         // <td>{ language.total() }</td>
                                    </tr>
                                 }
