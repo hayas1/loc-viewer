@@ -3,6 +3,7 @@ use std::sync::Arc;
 use web_sys::HtmlInputElement;
 use yew::prelude::*;
 use yew_autoprops::autoprops;
+use yew_icons::{Icon, IconId};
 use yew_router::hooks::use_location;
 
 use super::{
@@ -84,7 +85,7 @@ pub fn table_result(repository: &Arc<GitHubRepository>) -> HtmlResult {
 pub fn table_view(statistics: &Arc<Statistics>) -> HtmlResult {
     let caption_input = use_node_ref();
     let cell_pudding = classes!("px-4", "py-2");
-    let leftmost = classes!("py-2", "sticky", "left-0"); // TODO long name language
+    let leftmost = classes!("p-2", "sticky", "left-0"); // TODO long name language
     let table_header = classes!("text-teal-900", "bg-teal-50", "dark:text-teal-50", "dark:bg-teal-800");
 
     let (cp, lm, th) = (cell_pudding.clone(), leftmost.clone(), table_header.clone());
@@ -99,12 +100,26 @@ pub fn table_view(statistics: &Arc<Statistics>) -> HtmlResult {
             </caption>
             <thead>
                 <tr>
-                    <th scope="col" class={classes!(lm.clone(), th.clone())}>{ "Language" }</th>
-                    <th scope="col" class={classes!(cp.clone(), th.clone())}>{ "Files" }</th>
-                    <th scope="col" class={classes!(cp.clone(), th.clone())}>{ "Lines" }</th>
-                    <th scope="col" class={classes!(cp.clone(), th.clone())}>{ "Code" }</th>
-                    <th scope="col" class={classes!(cp.clone(), th.clone())}>{ "Comments" }</th>
-                    <th scope="col" class={classes!(cp.clone(), th.clone())}>{ "Blanks" }</th>
+                    <th scope="col" class={classes!(lm.clone(), th.clone())} title="Language">
+                        <div class={classes!("flex", "justify-center")}>
+                            <Icon icon_id={IconId::OcticonsRocket16}/>
+                        </div>
+                    </th>
+                    <th scope="col" class={classes!(cp.clone(), th.clone())} title="Files">
+                        <Icon icon_id={IconId::OcticonsFile16}/>
+                    </th>
+                    <th scope="col" class={classes!(cp.clone(), th.clone())} title="Lines">
+                        <Icon icon_id={IconId::OcticonsThreeBars16}/>
+                    </th>
+                    <th scope="col" class={classes!(cp.clone(), th.clone())} title="Code">
+                        <Icon icon_id={IconId::OcticonsCode16}/>
+                    </th>
+                    <th scope="col" class={classes!(cp.clone(), th.clone())} title="Comments">
+                        <Icon icon_id={IconId::OcticonsComment16}/>
+                    </th>
+                    <th scope="col" class={classes!(cp.clone(), th.clone())} title="Blanks">
+                        <Icon icon_id={IconId::OcticonsDash16}/>
+                    </th>
                 </tr>
             </thead>
             <tbody>
