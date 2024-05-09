@@ -17,6 +17,8 @@ use crate::{
     github::{repository::GitHubRepository, statistics::Statistics},
 };
 
+pub const CAPTION: &str = "Statistics";
+
 #[autoprops]
 #[function_component(StatisticsPage)]
 pub fn statistics_page(host: &String, owner: &String, repo: &String) -> HtmlResult {
@@ -95,7 +97,7 @@ pub fn table_view(statistics: &Arc<Statistics>) -> HtmlResult {
                 <input ref={caption_input.clone()}
                     disabled=true
                     class={classes!("px-4", "appearance-none", "bg-transparent", "sticky", "left-0")}
-                    value="Statistics"
+                    value={CAPTION}
                 />
             </caption>
             <thead>
@@ -166,8 +168,9 @@ pub fn table_view(statistics: &Arc<Statistics>) -> HtmlResult {
 #[autoprops]
 #[function_component(TableCell)]
 pub fn table_cell(caption_input: &NodeRef, language: &String, category: &String, children: &Children) -> HtmlResult {
-    let overwrite_caption = {
-        let caption_input = caption_input.clone();
+    let focused = use_state(|| false);
+    let focus = {
+        let (caption_input, focused) = (caption_input.clone(), focused.clone());
         let (language, category) = (language.clone(), category.clone());
         Callback::from(move |_| {
             let result: Result<_> = (|| {
@@ -178,15 +181,48 @@ pub fn table_cell(caption_input: &NodeRef, language: &String, category: &String,
                 Ok(caption)
             })();
             match result {
-                Ok(_) => {}
+                Ok(_) => focused.set(true),
+                Err(err) => gloo::console::error!("error:", err.to_string()),
+            }
+        })
+    };
+    let blur = {
+        let (caption_input, focused) = (caption_input.clone(), focused.clone());
+        Callback::from(move |_| {
+            let result: Result<_> = (|| {
+                let caption = caption_input
+                    .cast::<HtmlInputElement>()
+                    .ok_or_else(|| anyhow::anyhow!(Unreachable::DomMaybeChanged))?
+                    .set_value(CAPTION);
+                Ok(caption)
+            })();
+            match result {
+                Ok(_) => focused.set(false),
                 Err(err) => gloo::console::error!("error:", err.to_string()),
             }
         })
     };
 
+    let focused_classes = classes!(focused.then(|| classes!(
+        "rounded-xl",
+        "rounded-full",
+        "text-teal-50",
+        "bg-teal-800",
+        "dark:text-teal-50",
+        "dark:bg-teal-700"
+    )));
     Ok(html! {
-        <button onclick={overwrite_caption}>
-            { children.clone() }
-        </button>
+        <div>
+            <button onclick={focus} class={focused_classes.clone()}>
+                { children.clone() }
+            </button>
+            if *focused {
+                // TODO do not use modal like closing mechanism ?
+                <div onclick={blur} class={classes!("flex", "justify-end", "absolute",
+                    "top-0", "left-0", "w-full", "h-full", "min-w-screen", "min-h-screen"
+                )}>
+                </div>
+            }
+        </div>
     })
 }
