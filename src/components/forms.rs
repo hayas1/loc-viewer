@@ -51,8 +51,8 @@ pub fn repo_url_bar(#[prop_or_default] id: &String) -> HtmlResult {
                 <input ref={url_input}
                     id={id.clone()}
                     class={classes!(
-                        "ps-8", "appearance-none", "bg-teal-50", "dark:bg-teal-800",
-                        "border", "border-teal-700", "text-teal-900", "dark:text-teal-50", "text-sm",
+                        "ps-8", "appearance-none","border", "border-teal-700", "bg-teal-50", "dark:bg-teal-800",
+                        "placeholder-teal-600/30", "dark:placeholder-teal-50/30", "text-teal-900", "dark:text-teal-50", "text-sm",
                         "rounded-lg", "p-1", "focus:outline-none", "block", "w-full"
                     )}
                     onchange={submit}
@@ -201,7 +201,8 @@ pub fn repo_info_forms() -> HtmlResult {
                         </label>
                         <input ref={input}
                             class={classes!(
-                                "ps-3", "appearance-none", "border-none", "w-full", "text-teal-700", "dark:text-teal-50",
+                                "ps-3", "appearance-none", "border-none", "w-full",
+                                "placeholder-teal-600/30", "dark:placeholder-teal-50/30", "text-teal-700", "dark:text-teal-50",
                                 "rounded-sm", "leading-tight", "focus:outline-none", bg
                             )}
                             id={id}
