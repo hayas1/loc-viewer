@@ -109,14 +109,14 @@ pub fn table_view(statistics: &Arc<Statistics>) -> HtmlResult {
     let table_header = classes!("text-teal-900", "bg-teal-50", "dark:text-teal-50", "dark:bg-teal-800");
     let (cp, lm, th) = (cell_pudding.clone(), leftmost.clone(), table_header.clone());
 
-    let col: Arc<[(_, _, Box<dyn Fn(&tokei::Language) -> _>); 6]> = Arc::new([
+    let col: [(_, _, Box<dyn Fn(&tokei::Language) -> _>); 6] = [
         ("Language", IconId::OcticonsRocket16, Box::new(|l| l.reports.len())),
         ("Files", IconId::OcticonsFile16, Box::new(|l| l.reports.len())),
         ("Lines", IconId::OcticonsThreeBars16, Box::new(|l| l.lines())),
         ("Code", IconId::OcticonsCode16, Box::new(|l| l.code)),
         ("Comments", IconId::OcticonsComment16, Box::new(|l| l.comments)),
         ("Blanks", IconId::OcticonsDash16, Box::new(|l| l.blanks)),
-    ]);
+    ];
 
     Ok(html! {
         <table class={classes!("table-auto")}>
