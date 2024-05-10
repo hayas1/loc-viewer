@@ -107,8 +107,17 @@ pub fn table_view(statistics: &Arc<Statistics>) -> HtmlResult {
     let cell_pudding = classes!("px-4", "py-2");
     let leftmost = classes!("p-2", "sticky", "left-0"); // TODO long name language
     let table_header = classes!("text-teal-900", "bg-teal-50", "dark:text-teal-50", "dark:bg-teal-800");
-
     let (cp, lm, th) = (cell_pudding.clone(), leftmost.clone(), table_header.clone());
+
+    let col: Arc<[(_, _, Box<dyn Fn(&tokei::Language) -> _>); 6]> = Arc::new([
+        ("Language", IconId::OcticonsRocket16, Box::new(|l| l.reports.len())),
+        ("Files", IconId::OcticonsFile16, Box::new(|l| l.reports.len())),
+        ("Lines", IconId::OcticonsThreeBars16, Box::new(|l| l.lines())),
+        ("Code", IconId::OcticonsCode16, Box::new(|l| l.code)),
+        ("Comments", IconId::OcticonsComment16, Box::new(|l| l.comments)),
+        ("Blanks", IconId::OcticonsDash16, Box::new(|l| l.blanks)),
+    ]);
+
     Ok(html! {
         <table class={classes!("table-auto")}>
             <caption class={classes!("caption-top", "text-left")}>
@@ -120,59 +129,42 @@ pub fn table_view(statistics: &Arc<Statistics>) -> HtmlResult {
             </caption>
             <thead>
                 <tr>
-                    <th scope="col" class={classes!(lm.clone(), th.clone())} title="Language">
-                        <div class={classes!("flex", "justify-center")}>
-                            <Icon icon_id={IconId::OcticonsRocket16}/>
-                        </div>
-                    </th>
-                    <th scope="col" class={classes!(cp.clone(), th.clone())} title="Files">
-                        <Icon icon_id={IconId::OcticonsFile16}/>
-                    </th>
-                    <th scope="col" class={classes!(cp.clone(), th.clone())} title="Lines">
-                        <Icon icon_id={IconId::OcticonsThreeBars16}/>
-                    </th>
-                    <th scope="col" class={classes!(cp.clone(), th.clone())} title="Code">
-                        <Icon icon_id={IconId::OcticonsCode16}/>
-                    </th>
-                    <th scope="col" class={classes!(cp.clone(), th.clone())} title="Comments">
-                        <Icon icon_id={IconId::OcticonsComment16}/>
-                    </th>
-                    <th scope="col" class={classes!(cp.clone(), th.clone())} title="Blanks">
-                        <Icon icon_id={IconId::OcticonsDash16}/>
-                    </th>
+                    {for col.iter().enumerate().map(|(i, (name, icon_id, _))| {
+                        html! {
+                            if i == 0 {
+                                <th scope="col" class={classes!(lm.clone(), th.clone())} title={&name[..]}>
+                                    <div class={classes!("flex", "justify-center")}>
+                                        <Icon icon_id={icon_id.clone()}/>
+                                    </div>
+                                </th>
+                            } else {
+                                <th scope="col" class={classes!(cp.clone(), th.clone())} title={&name[..]}>
+                                    <Icon icon_id={icon_id.clone()}/>
+                                </th>
+                            }
+                        }
+                    })}
                 </tr>
             </thead>
             <tbody>
-                {
-                    for statistics.languages.iter().map(|(language_type, language)| {
+                {for statistics.languages.iter().map(|(language_type, language)| {
                         html! {
                             <tr class={classes!("border-b")}>
-                                <th scope="row" class={classes!(lm.clone(), th.clone())}>{ language_type.to_string() }</th>
-                                <td class={classes!(cp.clone())}>
-                                    <TableCell caption_input={caption_input.clone()} language={language_type.to_string()} category="Files">
-                                        { language.reports.len() }
-                                    </TableCell>
-                                </td>
-                                <td class={classes!(cp.clone())}>
-                                    <TableCell caption_input={caption_input.clone()} language={language_type.to_string()} category="Lines">
-                                        { language.lines() }
-                                    </TableCell>
-                                </td>
-                                <td class={classes!(cp.clone())}>
-                                    <TableCell caption_input={caption_input.clone()} language={language_type.to_string()} category="Code">
-                                        { language.code }
-                                    </TableCell>
-                                </td>
-                                <td class={classes!(cp.clone())}>
-                                    <TableCell caption_input={caption_input.clone()} language={language_type.to_string()} category="Comments">
-                                        { language.comments }
-                                    </TableCell>
-                                </td>
-                                <td class={classes!(cp.clone())}>
-                                    <TableCell caption_input={caption_input.clone()} language={language_type.to_string()} category="Blanks">
-                                        { language.blanks }
-                                    </TableCell>
-                                </td>
+                                {for col.iter().enumerate() .map(|(i, (name, _, f))| {
+                                    html! {
+                                        if i == 0 {
+                                            <th scope="row" class={classes!(lm.clone(), th.clone())}>
+                                                { language_type.to_string() }
+                                            </th>
+                                        } else {
+                                            <td class={classes!(cp.clone())}>
+                                                <TableCell caption_input={caption_input.clone()} language={language_type.to_string()} category={&name[..]}>
+                                                    { f(language) }
+                                                </TableCell>
+                                            </td>
+                                        }
+                                    }
+                                })}
                                 // <td>{ language.total() }</td>
                             </tr>
                         }
