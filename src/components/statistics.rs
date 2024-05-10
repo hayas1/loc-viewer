@@ -70,9 +70,28 @@ pub fn statistics_view(repository: &Arc<GitHubRepository>) -> HtmlResult {
     Ok(html! {
         match &(*result) {
             Ok(statistics) => html! {
-                <div class={classes!("flex", "overflow-x-auto")}>
-                    <div class={classes!("flex-none", "w-10")}>
-                        <TableView statistics={statistics.clone()}/>
+                <div>
+                    <div class={classes!("pb-4", "inline-flex", "rounded-md", "text-sm")} role="group">
+                        <button type="button"
+                            class={classes!("px-2", "border", "rounded-s-full", "hover:bg-teal-50", "hover:dark:bg-teal-800", "focus:ring-2")}
+                        >
+                            <p>{"Table"}</p>
+                        </button>
+                        <button type="button"
+                            class={classes!("px-2", "border-t", "border-b", "hover:bg-teal-50", "hover:dark:bg-teal-800", "focus:ring-2")}
+                        >
+                            <p class="text-teal-900/50 dark:text-teal-50/50" title="unimplemented">{"Heatmap"}</p>
+                        </button>
+                        <button type="button"
+                            class={classes!("px-2", "border", "rounded-e-full", "hover:bg-teal-50", "hover:dark:bg-teal-800", "focus:ring-2")}
+                        >
+                            <p class="text-teal-900/50 dark:text-teal-50/50" title="unimplemented">{"Chart"}</p>
+                        </button>
+                    </div>
+                    <div class={classes!("flex", "overflow-x-auto")}>
+                        <div class={classes!("flex-none", "w-10")}>
+                            <TableView statistics={statistics.clone()}/>
+                        </div>
                     </div>
                 </div>
             },
