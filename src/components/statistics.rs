@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use web_sys::HtmlInputElement;
-use yew::prelude::*;
+use yew::{prelude::*, suspense::use_future};
 use yew_autoprops::autoprops;
 use yew_icons::{Icon, IconId};
 use yew_router::hooks::use_location;
@@ -27,10 +27,18 @@ pub fn statistics_page(host: &String, owner: &String, repo: &String) -> HtmlResu
     };
     let query = ParamsModel::from_query(&location.query::<Vec<(String, String)>>().unwrap());
     let repository = Arc::new(GitHubRepository::new(owner, repo));
+
+    let fallback = html! {
+        <div class={classes!("w-full", "h-full", "flex", "justify-center", "items-center")} aria-label="Loading">
+            <div class={classes!("animate-spin", "inline-block", "w-8", "h-8", "border-4", "border-teal-600", "rounded-full", "border-t-transparent")}></div>
+        </div>
+    };
     Ok(html! {
         <ResponsivePanesFrame>
             <Pane class={classes!("p-6", "grow", "w-full")}>
-                <TableResult repository={repository}/>
+                <Suspense {fallback}>
+                    <StatisticsView repository={repository}/>
+                </Suspense>
             </Pane>
             <Pane class={classes!("p-6", "w-max", "max-w-xs", "flex", "flex-col", "justify-start")}>
                 <div class={classes!("h-full", "w-full", "flex", "flex-col", "justify-start")}>
@@ -52,32 +60,23 @@ pub fn statistics_page(host: &String, owner: &String, repo: &String) -> HtmlResu
 }
 
 #[autoprops]
-#[function_component(TableResult)]
-pub fn table_result(repository: &Arc<GitHubRepository>) -> HtmlResult {
+#[function_component(StatisticsView)]
+pub fn statistics_view(repository: &Arc<GitHubRepository>) -> HtmlResult {
     let repository = repository.clone();
-    let result = use_state(|| None);
-    {
-        let (result, repository) = (result.clone(), repository.clone());
-        use_effect_with(repository.clone(), move |_| {
-            wasm_bindgen_futures::spawn_local(async move {
-                let statistics = repository.get_statistics(&Default::default()).await;
-                let arc = statistics.map(Arc::new);
-                result.set(Some(arc));
-            })
-        });
-    }
+    let config = Default::default();
+
+    let result = use_future(|| async move { repository.get_statistics(&config).await.map(Arc::new) })?;
 
     Ok(html! {
         match &(*result) {
-            Some(Ok(statistics)) => html! {
+            Ok(statistics) => html! {
                 <div class={classes!("flex", "overflow-x-auto")}>
                     <div class={classes!("flex-none", "w-10")}>
                         <TableView statistics={statistics.clone()}/>
                     </div>
                 </div>
             },
-            Some(Err(err)) => html! { format!("error occurred: {err:?}") },
-            None => html! { format!("loading...") },
+            Err(err) => html! { format!("error occurred: {err:?}") },
         }
     })
 }
