@@ -40,7 +40,7 @@ pub fn statistics_page(host: &String, owner: &String, repo: &String) -> HtmlResu
                     <StatisticsView repository={repository}/>
                 </Suspense>
             </Pane>
-            <Pane class={classes!("p-6", "w-max", "max-w-xs", "flex", "flex-col", "justify-start")}>
+            <Pane class={classes!("p-6", "max-w-xs", "flex", "flex-col", "justify-start")}>
                 <div class={classes!("h-full", "w-full", "flex", "flex-col", "justify-start")}>
                     <label for="repository-url" class={classes!("w-full")}>{"URL"}</label>
                     <div class={classes!("w-full", "pt-4")}>
