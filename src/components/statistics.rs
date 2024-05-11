@@ -31,7 +31,7 @@ pub fn statistics_page(host: &String, owner: &String, repo: &String) -> HtmlResu
     };
     Ok(html! {
         <ResponsivePanesFrame>
-            <Pane class={classes!("p-6", "grow", "w-full")}>
+            <Pane class={classes!("p-6", "grow", "max-w-xs", "md:w-full", "md:max-w-full")}>
                 <Suspense {fallback}>
                     <StatisticsView repository={repository}/>
                 </Suspense>
