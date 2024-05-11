@@ -1,6 +1,5 @@
 use std::sync::Arc;
 
-use web_sys::HtmlInputElement;
 use yew::{prelude::*, suspense::use_future};
 use yew_autoprops::autoprops;
 use yew_icons::{Icon, IconId};
@@ -12,10 +11,7 @@ use super::{
     query_parameters::ParamsModel,
     routes::RouterUnavailable,
 };
-use crate::{
-    error::{render::Unreachable, Result},
-    github::{repository::GitHubRepository, statistics::Statistics},
-};
+use crate::github::{repository::GitHubRepository, statistics::Statistics};
 
 pub const CAPTION: &str = "Statistics";
 
@@ -103,9 +99,8 @@ pub fn statistics_view(repository: &Arc<GitHubRepository>) -> HtmlResult {
 #[autoprops]
 #[function_component(TableView)]
 pub fn table_view(statistics: &Arc<Statistics>) -> HtmlResult {
-    let caption_input = use_node_ref();
     let cell_pudding = classes!("px-4", "py-2");
-    let leftmost = classes!("p-2", "sticky", "left-0"); // TODO long name language
+    let leftmost = classes!("p-2", "sticky", "left-0", "z-[50]"); // TODO long name language, z-index for scroll
     let table_header = classes!("text-teal-900", "bg-teal-50", "dark:text-teal-50", "dark:bg-teal-800");
     let (cp, lm, th) = (cell_pudding.clone(), leftmost.clone(), table_header.clone());
 
@@ -118,28 +113,25 @@ pub fn table_view(statistics: &Arc<Statistics>) -> HtmlResult {
         ("Blanks", IconId::OcticonsDash16, Box::new(|l| l.blanks)),
     ];
 
+    let focused = use_state(|| None);
+
     Ok(html! {
         <table class={classes!("table-auto")}>
-            <caption class={classes!("caption-top", "text-left")}>
-                <input ref={caption_input.clone()}
-                    disabled=true
-                    class={classes!("px-4", "appearance-none", "bg-transparent", "sticky", "left-0")}
-                    value={CAPTION}
-                />
-            </caption>
             <thead>
                 <tr>
-                    {for col.iter().enumerate().map(|(i, (name, icon_id, _))| {
+                    {for col.iter().enumerate().map(|(j, (title, icon_id, _))| {
                         html! {
-                            if i == 0 {
-                                <th scope="col" class={classes!(lm.clone(), th.clone())} title={&name[..]}>
+                            if j == 0 {
+                                <th scope="col" class={classes!(lm.clone(), th.clone())} title={&title[..]}>
                                     <div class={classes!("flex", "justify-center")}>
                                         <Icon icon_id={icon_id.clone()}/>
                                     </div>
                                 </th>
                             } else {
-                                <th scope="col" class={classes!(cp.clone(), th.clone())} title={&name[..]}>
-                                    <Icon icon_id={icon_id.clone()}/>
+                                <th scope="col" class={classes!(cp.clone(), th.clone())} title={&title[..]}>
+                                    <TableHeaderCol focused={*focused} col={j} title={&title[..]}>
+                                        <Icon icon_id={icon_id.clone()}/>
+                                    </TableHeaderCol>
                                 </th>
                             }
                         }
@@ -147,26 +139,26 @@ pub fn table_view(statistics: &Arc<Statistics>) -> HtmlResult {
                 </tr>
             </thead>
             <tbody>
-                {for statistics.languages.iter().map(|(language_type, language)| {
-                        html! {
-                            <tr class={classes!("border-b")}>
-                                {for col.iter().enumerate() .map(|(i, (name, _, f))| {
-                                    html! {
-                                        if i == 0 {
-                                            <th scope="row" class={classes!(lm.clone(), th.clone())}>
-                                                { language_type.to_string() }
-                                            </th>
-                                        } else {
-                                            <td class={classes!(cp.clone())}>
-                                                <TableCell caption_input={caption_input.clone()} language={language_type.to_string()} category={&name[..]}>
-                                                    { f(language) }
-                                                </TableCell>
-                                            </td>
-                                        }
+                {for statistics.languages.iter().enumerate().map(|(i, (language_type, language))| {
+                    html! {
+                        <tr class={classes!()}>
+                            {for col.iter().enumerate().map(|(j, (_, _, f))| {
+                                html! {
+                                    if j == 0 {
+                                        <th scope="row" class={classes!(lm.clone(), th.clone())}>
+                                            { language_type.to_string() }
+                                        </th>
+                                    } else {
+                                        <td>
+                                            <TableCell class={cp.clone()} focused={focused.clone()} pos={(i, j)}>
+                                                { f(language) }
+                                            </TableCell>
+                                        </td>
                                     }
-                                })}
-                                // <td>{ language.total() }</td>
-                            </tr>
+                                }
+                            })}
+                            // <td>{ language.total() }</td>
+                        </tr>
                         }
                     })
                 }
@@ -176,63 +168,52 @@ pub fn table_view(statistics: &Arc<Statistics>) -> HtmlResult {
 }
 
 #[autoprops]
-#[function_component(TableCell)]
-pub fn table_cell(caption_input: &NodeRef, language: &String, category: &String, children: &Children) -> HtmlResult {
-    let focused = use_state(|| false);
-    let focus = {
-        let (caption_input, focused) = (caption_input.clone(), focused.clone());
-        let (language, category) = (language.clone(), category.clone());
-        Callback::from(move |_| {
-            let result: Result<_> = (|| {
-                let caption = caption_input
-                    .cast::<HtmlInputElement>()
-                    .ok_or_else(|| anyhow::anyhow!(Unreachable::DomMaybeChanged))?
-                    .set_value(&format!("{} {}", language.clone(), category.clone()));
-                Ok(caption)
-            })();
-            match result {
-                Ok(_) => focused.set(true),
-                Err(err) => gloo::console::error!("error:", err.to_string()),
-            }
-        })
-    };
-    let blur = {
-        let (caption_input, focused) = (caption_input.clone(), focused.clone());
-        Callback::from(move |_| {
-            let result: Result<_> = (|| {
-                let caption = caption_input
-                    .cast::<HtmlInputElement>()
-                    .ok_or_else(|| anyhow::anyhow!(Unreachable::DomMaybeChanged))?
-                    .set_value(CAPTION);
-                Ok(caption)
-            })();
-            match result {
-                Ok(_) => focused.set(false),
-                Err(err) => gloo::console::error!("error:", err.to_string()),
-            }
-        })
-    };
+#[function_component(TableHeaderCol)]
+pub fn table_header_col(
+    focused: &Option<(usize, usize)>,
+    col: usize,
+    title: &String,
+    #[prop_or_default] class: &Classes,
+    children: &Children,
+) -> HtmlResult {
+    let popup = matches!(focused.map(|(_, c)| c == col), Some(true));
 
-    let focused_classes = classes!(focused.then(|| classes!(
-        "rounded-xl",
-        "rounded-full",
-        "text-teal-50",
-        "bg-teal-800",
-        "dark:text-teal-50",
-        "dark:bg-teal-700"
-    )));
     Ok(html! {
-        <div>
-            <button onclick={focus} class={focused_classes.clone()}>
-                { children.clone() }
-            </button>
-            if *focused {
-                // TODO do not use modal like closing mechanism ?
-                <div onclick={blur} class={classes!("flex", "justify-end", "absolute",
-                    "top-0", "left-0", "w-full", "h-full", "min-w-screen", "min-h-screen"
-                )}>
+        <div class={classes!("flex", "justify-center", "relative", class.clone())} title={title.clone()}>
+            <div class={classes!(focused.is_some().then(|| "opacity-30"))}>
+                {children.clone()}
+            </div>
+            if popup {
+                <div class={classes!("absolute", "top-0", "left-0", "w-full", "h-full",
+                    "px-4", "text-center"
+                    )}
+                >
+                    {title.clone()}
                 </div>
             }
+        </div>
+    })
+}
+
+#[autoprops]
+#[function_component(TableCell)]
+pub fn table_cell(
+    focused: &UseStateHandle<Option<(usize, usize)>>,
+    pos: (usize, usize),
+    #[prop_or_default] class: &Classes,
+    children: &Children,
+) -> HtmlResult {
+    let highlight =
+        focused.map(|(i, j)| i == pos.0 || j == pos.1).map(|b| b.then(|| classes!("bg-teal-50", "dark:bg-teal-800")));
+
+    let focus = {
+        let (focused, pos) = (focused.clone(), pos.clone());
+        Callback::from(move |_| focused.set(Some(pos.clone())))
+    };
+
+    Ok(html! {
+        <div onmouseenter={focus} class={classes!(class.clone(), highlight)}>
+            { children.clone() }
         </div>
     })
 }
