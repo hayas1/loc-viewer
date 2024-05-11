@@ -79,7 +79,7 @@ pub fn responsive_panes_frame(children: &Children) -> HtmlResult {
 
 #[autoprops]
 #[function_component(Pane)]
-pub fn pane(children: &Children, #[prop_or_default] class: &Option<Classes>) -> HtmlResult {
+pub fn pane(children: &Children, #[prop_or_default] class: Classes) -> HtmlResult {
     Ok(html! {
         <div class={classes!(PANE_THEME.clone(), class.clone())}>
             { children.clone() }
