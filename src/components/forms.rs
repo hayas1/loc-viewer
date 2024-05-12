@@ -70,6 +70,16 @@ pub fn repo_url_bar(#[prop_or_default] id: &String) -> HtmlResult {
 pub fn repo_info_forms() -> HtmlResult {
     let navigator = use_navigator();
 
+    let more = use_state(|| false);
+    let open_more = {
+        let more = more.clone();
+        Callback::from(move |_| more.set(true))
+    };
+    let close_more = {
+        let more = more.clone();
+        Callback::from(move |_| more.set(false))
+    };
+
     let (host_input, owner_input, repo_input) = (use_node_ref(), use_node_ref(), use_node_ref());
     let (sha_input, paths_input, excluded_input) = (use_node_ref(), use_node_ref(), use_node_ref());
 
@@ -192,26 +202,39 @@ pub fn repo_info_forms() -> HtmlResult {
 
     Ok(html! {
         <div class={classes!("flex", "flex-wrap", "w-full")}>
+            <p class={classes!("text-teal-200", "dark:text-teal-600", "w-full", "text-right")}>
+                if *more {
+                    <button onclick={close_more} class={classes!("text-teal-200", "dark:text-teal-600")}>
+                        <Icon icon_id={IconId::OcticonsChevronUp16} class={classes!("h-6", "inline-block")}/>
+                    </button>
+                } else {
+                    <button onclick={open_more}>
+                        <Icon icon_id={IconId::OcticonsChevronDown16} class={classes!("h-6", "inline-block")}/>
+                    </button>
+                }
+                {"more"}
+            </p>
             {for inputs.into_iter().map(|(input, id, label, title, placeholder, aria_label, required, icon)| {
-                let bg = if required { classes!("bg-teal-50", "dark:bg-teal-800") } else { classes!("bg-transparent") };
                 html! {
-                    <div class={classes!("pt-4", "h-10", "w-full", "flex", "items-center", "border-b", "border-teal-500")}>
-                        <label for={id} class={classes!("w-20", "text-sm", "text-right", "text-teal-500", "dark:text-teal-50")}>
-                            {label}
-                        </label>
-                        <input ref={input}
-                            class={classes!(
-                                "ps-3", "appearance-none", "border-none", "w-full",
-                                "placeholder-teal-600/30", "dark:placeholder-teal-50/30", "text-teal-700", "dark:text-teal-50",
-                                "rounded-sm", "leading-tight", "focus:outline-none", bg
-                            )}
-                            id={id}
-                            type="text"
-                            title={title}
-                            placeholder={placeholder}
-                            aria-label={aria_label}
-                        />
-                        <Icon icon_id={icon} class={classes!("h-5", "m-2", "text-teal-500", "dark:text-teal-50")}/>
+                    <div class={classes!((!*more && !required).then(|| "hidden"))}>
+                        <div class={classes!("pt-4", "h-10", "w-full", "flex", "items-center", "border-b", "border-teal-500")}>
+                            <label for={id} class={classes!("w-20", "text-sm", "text-right", "text-teal-500", "dark:text-teal-50")}>
+                                {label}
+                            </label>
+                            <input ref={input}
+                                class={classes!(
+                                    "ps-3", "appearance-none", "border-none", "w-full",
+                                    "placeholder-teal-600/30", "dark:placeholder-teal-50/30", "text-teal-700", "dark:text-teal-50",
+                                    "rounded-sm", "leading-tight", "focus:outline-none", "bg-transparent"
+                                )}
+                                id={id}
+                                type="text"
+                                title={title}
+                                placeholder={placeholder}
+                                aria-label={aria_label}
+                            />
+                            <Icon icon_id={icon} class={classes!("h-5", "m-2", "text-teal-500", "dark:text-teal-50")}/>
+                        </div>
                     </div>
                 }
             })}

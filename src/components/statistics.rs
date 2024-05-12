@@ -23,7 +23,7 @@ pub fn statistics_page(host: &String, owner: &String, repo: &String) -> HtmlResu
     };
     let query = ParamsModel::from_query(&location.query::<Vec<(String, String)>>().unwrap());
     let repository = Arc::new(GitHubRepository::new(owner, repo));
-    let url = repository.to_url().unwrap().to_string();
+    let repository_url = repository.to_url().unwrap().to_string();
 
     let fallback = html! {
         <div class={classes!("w-full", "h-full", "flex", "justify-center", "items-center")} aria-label="Loading">
@@ -35,11 +35,11 @@ pub fn statistics_page(host: &String, owner: &String, repo: &String) -> HtmlResu
             <Pane class={classes!("p-6", "grow", "max-w-xs", "md:w-full", "md:max-w-full")}>
                 <p>
                     <Icon icon_id={IconId::OcticonsMarkGithub16} class={classes!("mx-2", "inline-block")}/>
-                    <a href={url.clone()} class={classes!(
+                    <a href={repository_url.clone()} class={classes!(
                         "border-b", "border-teal-500", "text-teal-500", "hover:text-teal-700",
                         "dark:border-teal-100", "dark:text-teal-100", "dark:hover:text-teal-200",
                     )}>
-                        {url}
+                        {repository_url}
                     </a>
                 </p>
                 <Suspense {fallback}>
@@ -56,7 +56,7 @@ pub fn statistics_page(host: &String, owner: &String, repo: &String) -> HtmlResu
                 <p class={classes!("p-2", "text-teal-900", "dark:text-teal-50", "text-center")}>{"or"}</p>
                 <div class={classes!("flex", "flex-col", "justify-start")}>
                     <label for="repository-info">{"Information"}</label>
-                    <div class={classes!("w-full", "pt-4")}>
+                    <div class={classes!("w-full")}>
                         <RepoInfoForms/>
                     </div>
                 </div>
