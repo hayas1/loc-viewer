@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use yew::{prelude::*, suspense::use_future};
+use yew::{prelude::*, suspense::use_future_with};
 use yew_autoprops::autoprops;
 use yew_icons::{Icon, IconId};
 use yew_router::hooks::use_location;
@@ -68,7 +68,8 @@ pub fn statistics_view(repository: &Arc<GitHubRepository>) -> HtmlResult {
     let repository = repository.clone();
     let config = Default::default();
 
-    let result = use_future(|| async move { repository.get_statistics(&config).await.map(Arc::new) })?;
+    let result =
+        use_future_with(repository.clone(), |_| async move { repository.get_statistics(&config).await.map(Arc::new) })?;
 
     Ok(html! {
         match &(*result) {
