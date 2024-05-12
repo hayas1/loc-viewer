@@ -23,6 +23,7 @@ pub fn statistics_page(host: &String, owner: &String, repo: &String) -> HtmlResu
     };
     let query = ParamsModel::from_query(&location.query::<Vec<(String, String)>>().unwrap());
     let repository = Arc::new(GitHubRepository::new(owner, repo));
+    let url = repository.to_url().unwrap().to_string();
 
     let fallback = html! {
         <div class={classes!("w-full", "h-full", "flex", "justify-center", "items-center")} aria-label="Loading">
@@ -32,6 +33,12 @@ pub fn statistics_page(host: &String, owner: &String, repo: &String) -> HtmlResu
     Ok(html! {
         <ResponsivePanesFrame>
             <Pane class={classes!("p-6", "grow", "max-w-xs", "md:w-full", "md:max-w-full")}>
+                <a href={url.clone()} class={classes!(
+                    "border-b", "border-teal-500", "text-teal-500", "hover:text-teal-700",
+                    "dark:border-teal-100", "dark:text-teal-100", "dark:hover:text-teal-200",
+                )}>
+                    {url}
+                </a>
                 <Suspense {fallback}>
                     <StatisticsView repository={repository}/>
                 </Suspense>
@@ -66,8 +73,8 @@ pub fn statistics_view(repository: &Arc<GitHubRepository>) -> HtmlResult {
     Ok(html! {
         match &(*result) {
             Ok(statistics) => html! {
-                <div>
-                    <div class={classes!("pb-4", "inline-flex", "rounded-md", "text-sm")} role="group">
+                <div class={classes!("pt-4")}>
+                    <div class={classes!("pb-2", "inline-flex", "rounded-md", "text-sm")} role="group">
                         <button type="button"
                             class={classes!("px-2", "border", "rounded-s-full", "hover:bg-teal-50", "hover:dark:bg-teal-800", "focus:ring-2")}
                         >
