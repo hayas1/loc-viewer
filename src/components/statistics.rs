@@ -179,15 +179,12 @@ pub fn table_header_col(
     let popup = matches!(focused.map(|(_, c)| c == col), Some(true));
 
     Ok(html! {
-        <div class={classes!("flex", "justify-center", "relative", class.clone())} title={title.clone()}>
-            <div class={classes!(popup.then(|| "opacity-30"))}>
+        <div class={classes!("flex", "justify-center", "relative", "bg-cover", class.clone())} title={title.clone()}>
+            <div class={classes!(popup.then(|| "opacity-20"))}>
                 {children.clone()}
             </div>
             if popup {
-                <div class={classes!("absolute", "top-0", "left-0", "w-full", "h-full",
-                    "px-4", "text-center"
-                    )}
-                >
+                <div class={classes!("absolute", "top-1/2", "left-1/2", "-translate-x-1/2", "-translate-y-1/2")}>
                     {title.clone()}
                 </div>
             }
