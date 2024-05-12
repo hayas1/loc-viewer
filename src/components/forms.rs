@@ -11,6 +11,7 @@ use crate::{
     github::repository::GitHubRepository,
 };
 
+/// TODO refactor, with_label
 #[autoprops]
 #[function_component(RepoUrlBar)]
 pub fn repo_url_bar(#[prop_or_default] id: &String) -> HtmlResult {
@@ -65,6 +66,7 @@ pub fn repo_url_bar(#[prop_or_default] id: &String) -> HtmlResult {
     })
 }
 
+/// TODO refactor, with_label
 #[autoprops]
 #[function_component(RepoInfoForms)]
 pub fn repo_info_forms() -> HtmlResult {
