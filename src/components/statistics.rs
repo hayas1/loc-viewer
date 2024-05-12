@@ -99,10 +99,9 @@ pub fn statistics_view(repository: &Arc<GitHubRepository>) -> HtmlResult {
 #[autoprops]
 #[function_component(TableView)]
 pub fn table_view(statistics: &Arc<Statistics>) -> HtmlResult {
-    let cell_pudding = classes!("px-4", "py-2");
-    let leftmost = classes!("p-2", "sticky", "left-0", "z-[50]"); // TODO long name language, z-index for scroll
+    let leftmost = classes!("sticky", "left-0", "z-[50]"); // TODO long name language, z-index for scroll
     let table_header = classes!("text-teal-900", "bg-teal-50", "dark:text-teal-50", "dark:bg-teal-800");
-    let (cp, lm, th) = (cell_pudding.clone(), leftmost.clone(), table_header.clone());
+    let (lm, th) = (leftmost.clone(), table_header.clone());
 
     let col: [(_, _, Box<dyn Fn(&tokei::Language) -> _>); 6] = [
         ("Language", IconId::OcticonsRocket16, Box::new(|l| l.reports.len())),
@@ -128,7 +127,7 @@ pub fn table_view(statistics: &Arc<Statistics>) -> HtmlResult {
                                     </div>
                                 </th>
                             } else {
-                                <th scope="col" class={classes!(cp.clone(), th.clone())} title={&title[..]}>
+                                <th scope="col" class={classes!(th.clone())} title={&title[..]}>
                                     <TableHeaderCol focused={*focused} col={j} title={&title[..]}>
                                         <Icon icon_id={icon_id.clone()}/>
                                     </TableHeaderCol>
@@ -145,12 +144,14 @@ pub fn table_view(statistics: &Arc<Statistics>) -> HtmlResult {
                             {for col.iter().enumerate().map(|(j, (_, _, f))| {
                                 html! {
                                     if j == 0 {
-                                        <th scope="row" class={classes!(lm.clone(), th.clone())}>
-                                            { language_type.to_string() }
+                                        <th scope="row" class={classes!(lm.clone())}>
+                                            <TableHeaderRow class={classes!(th.clone())} focused={*focused} row={i} title={language_type.to_string()}>
+                                                { language_type.to_string() }
+                                            </TableHeaderRow>
                                         </th>
                                     } else {
                                         <td>
-                                            <TableCell class={cp.clone()} focused={focused.clone()} pos={(i, j)}>
+                                            <TableCell focused={focused.clone()} pos={(i, j)}>
                                                 { f(language) }
                                             </TableCell>
                                         </td>
@@ -180,7 +181,7 @@ pub fn table_header_col(
 
     Ok(html! {
         <div class={classes!("flex", "justify-center", "relative", "bg-cover", class.clone())} title={title.clone()}>
-            <div class={classes!(popup.then(|| "opacity-20"))}>
+            <div class={classes!("px-4", "py-2", popup.then(|| "opacity-20"))}>
                 {children.clone()}
             </div>
             if popup {
@@ -189,6 +190,25 @@ pub fn table_header_col(
                 </div>
             }
         </div>
+    })
+}
+
+#[autoprops]
+#[function_component(TableHeaderRow)]
+pub fn table_header_row(
+    focused: &Option<(usize, usize)>,
+    row: usize,
+    title: &String,
+    #[prop_or_default] class: &Classes,
+    children: &Children,
+) -> HtmlResult {
+    let popup = matches!(focused.map(|(r, _)| r == row), Some(true));
+
+    Ok(html! {
+        <p class={classes!("p-2", popup.then(|| classes!("bg-teal-100", "dark:bg-teal-700")), class.clone())}
+            title={title.clone()}>
+            {children.clone()}
+        </p>
     })
 }
 
@@ -213,7 +233,7 @@ pub fn table_cell(
     };
 
     Ok(html! {
-        <div onmouseenter={focus} onmouseleave={blur} class={classes!(class.clone(), highlight)}>
+        <div onmouseenter={focus} onmouseleave={blur} class={classes!("px-4", "py-2", class.clone(), highlight)}>
             { children.clone() }
         </div>
     })
