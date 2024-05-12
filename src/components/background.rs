@@ -14,8 +14,9 @@ pub const BG_THEME: Lazy<Classes> =
     Lazy::new(|| classes!("text-teal-900", "dark:text-teal-50", "bg-teal-50", "dark:bg-teal-950"));
 pub const BG_LINK_THEME: Lazy<Classes> =
     Lazy::new(|| classes!("text-teal-600", "dark:text-teal-400", "hover:text-teal-500"));
-pub const PANE_THEME: Lazy<Classes> =
-    Lazy::new(|| classes!("container", "rounded-xl", "bg-white", "dark:text-teal-50", "dark:bg-teal-900"));
+pub const PANE_THEME: Lazy<Classes> = Lazy::new(|| {
+    classes!("container", "rounded-xl", "text-teal-900", "bg-white", "dark:text-teal-50", "dark:bg-teal-900")
+});
 
 #[autoprops]
 #[function_component(Logo)]

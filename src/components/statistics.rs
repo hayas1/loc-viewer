@@ -33,12 +33,15 @@ pub fn statistics_page(host: &String, owner: &String, repo: &String) -> HtmlResu
     Ok(html! {
         <ResponsivePanesFrame>
             <Pane class={classes!("p-6", "grow", "max-w-xs", "md:w-full", "md:max-w-full")}>
-                <a href={url.clone()} class={classes!(
-                    "border-b", "border-teal-500", "text-teal-500", "hover:text-teal-700",
-                    "dark:border-teal-100", "dark:text-teal-100", "dark:hover:text-teal-200",
-                )}>
-                    {url}
-                </a>
+                <p>
+                    <Icon icon_id={IconId::OcticonsMarkGithub16} class={classes!("mx-2", "inline-block")}/>
+                    <a href={url.clone()} class={classes!(
+                        "border-b", "border-teal-500", "text-teal-500", "hover:text-teal-700",
+                        "dark:border-teal-100", "dark:text-teal-100", "dark:hover:text-teal-200",
+                    )}>
+                        {url}
+                    </a>
+                </p>
                 <Suspense {fallback}>
                     <StatisticsView repository={repository}/>
                 </Suspense>
