@@ -180,7 +180,7 @@ pub fn table_header_col(
 
     Ok(html! {
         <div class={classes!("flex", "justify-center", "relative", class.clone())} title={title.clone()}>
-            <div class={classes!(focused.is_some().then(|| "opacity-30"))}>
+            <div class={classes!(popup.then(|| "opacity-30"))}>
                 {children.clone()}
             </div>
             if popup {
@@ -210,9 +210,13 @@ pub fn table_cell(
         let (focused, pos) = (focused.clone(), pos.clone());
         Callback::from(move |_| focused.set(Some(pos.clone())))
     };
+    let blur = {
+        let focused = focused.clone();
+        Callback::from(move |_| focused.set(None))
+    };
 
     Ok(html! {
-        <div onmouseenter={focus} class={classes!(class.clone(), highlight)}>
+        <div onmouseenter={focus} onmouseleave={blur} class={classes!(class.clone(), highlight)}>
             { children.clone() }
         </div>
     })
