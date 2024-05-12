@@ -17,7 +17,7 @@ pub fn home_page() -> HtmlResult {
             <Pane class={classes!("p-6", "w-full")}>
                 <div class={classes!("flex", "items-center")}>
                     <Icon icon_id={IconId::HeroiconsOutlineClock} class={classes!("inline-block", "h-6")}/>
-                    <h1 class={classes!("p-2", "text-teal-900", "dark:text-teal-50", "text-xl")}>
+                    <h1 class={classes!("p-2", "text-xl")}>
                         { h1 }
                     </h1>
                 </div>
@@ -32,7 +32,7 @@ pub fn home_page() -> HtmlResult {
                         </div>
                     </div>
                     <div class={classes!("md:flex", "md:justify-center", "md:items-center", "gap-4")}>
-                        <p class={classes!("p-2", "text-teal-900", "dark:text-teal-50", "text-center")}>{"or"}</p>
+                        <p class={classes!("p-2", "text-center", "font-bold", "text-lg")}>{"or"}</p>
                         <div class={classes!("max-w-screen-md")}>
                             <label for="repository-info">{"Information"}</label>
                             <RepoInfoForms/>
