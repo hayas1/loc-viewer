@@ -221,7 +221,7 @@ pub fn repo_info_forms() -> HtmlResult {
                     <div class={classes!((!*more && !required).then(|| "hidden"))}>
                         <div class={classes!("pt-4", "h-10", "w-full", "flex", "items-center", "border-b", "border-teal-500")}>
                             <label for={id} class={classes!("w-20", "text-sm", "text-right", "text-teal-500", "dark:text-teal-50")}>
-                                {label}
+                                <p class={classes!(required.then(|| "font-bold"))}>{label}</p>
                             </label>
                             <input ref={input}
                                 class={classes!(
