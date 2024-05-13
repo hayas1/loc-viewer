@@ -162,7 +162,7 @@ pub fn table_view(statistics: &Arc<Statistics>) -> HtmlResult {
                                         </th>
                                     } else {
                                         <td>
-                                            <TableCell focused={focused.clone()} pos={(i, j)}>
+                                            <TableCell focused={focused.clone()} pos={(i, j)} class={classes!("text-right")}>
                                                 { f(language) }
                                             </TableCell>
                                         </td>
