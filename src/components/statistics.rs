@@ -78,7 +78,7 @@ pub fn statistics_view(repository: &Arc<GitHubRepository>) -> HtmlResult {
         match &(*result) {
             Ok(statistics) => html! {
                 <div class={classes!("pt-4")}>
-                    <div class={classes!("pb-2", "inline-flex", "rounded-md", "text-sm")} role="group">
+                    <div class={classes!("pb-2", "inline-flex", "rounded-md", "text-sm", "hidden")} role="group"> // TODO implement other than table view
                         <button type="button"
                             class={classes!("px-2", "border", "rounded-s-full", "hover:bg-teal-50", "hover:dark:bg-teal-800", "focus:ring-2")}
                         >
