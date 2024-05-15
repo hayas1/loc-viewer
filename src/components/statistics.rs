@@ -1,5 +1,6 @@
 use std::sync::Arc;
 
+use tokei::Sort;
 use yew::{prelude::*, suspense::use_future_with};
 use yew_autoprops::autoprops;
 use yew_icons::{Icon, IconId};
@@ -8,7 +9,7 @@ use yew_router::hooks::use_location;
 use super::{
     background::{Pane, ResponsivePanesFrame},
     forms::{RepoInfoForms, RepoUrlBar},
-    query_parameters::{QueryParams, StatisticsParamsModel},
+    query_parameters::{QueryParams, StatisticsParamsModel, TableViewParamsModel},
     routes::RouterUnavailable,
 };
 use crate::github::{repository::GitHubRepository, statistics::Statistics};
@@ -110,6 +111,21 @@ pub fn statistics_view(repository: &Arc<GitHubRepository>) -> HtmlResult {
 #[autoprops]
 #[function_component(TableView)]
 pub fn table_view(statistics: &Arc<Statistics>) -> HtmlResult {
+    let Some(location) = use_location() else {
+        return Ok(html! { <RouterUnavailable/> });
+    };
+    let query = TableViewParamsModel::from_query(&location.query::<Vec<(String, String)>>().unwrap());
+    let mut languages: Vec<_> = statistics.languages.iter().collect();
+    match query.map(|q| q.order_by) {
+        Ok(Some(Sort::Blanks)) => languages.sort_by(|(_, la), (_, lb)| lb.blanks.cmp(&la.blanks)),
+        Ok(Some(Sort::Comments)) => languages.sort_by(|(_, la), (_, lb)| lb.comments.cmp(&la.comments)),
+        Ok(Some(Sort::Code)) => languages.sort_by(|(_, la), (_, lb)| lb.code.cmp(&la.code)),
+        Ok(Some(Sort::Files)) => languages.sort_by(|(_, la), (_, lb)| lb.reports.len().cmp(&la.reports.len())),
+        Ok(Some(Sort::Lines)) => languages.sort_by(|(_, la), (_, lb)| lb.lines().cmp(&la.lines())),
+        Ok(None) => (),
+        Err(_) => gloo::console::warn!("Failed to parse query"), // TODO error handling
+    }
+
     let leftmost = classes!("sticky", "left-0", "z-[50]"); // TODO long name language, z-index for scroll
     let table_header = classes!("text-teal-900", "bg-teal-50", "dark:text-teal-50", "dark:bg-teal-800");
     let (lm, th) = (leftmost.clone(), table_header.clone());
@@ -149,7 +165,7 @@ pub fn table_view(statistics: &Arc<Statistics>) -> HtmlResult {
                 </tr>
             </thead>
             <tbody>
-                {for statistics.languages.iter().enumerate().map(|(i, (language_type, language))| {
+                {for languages.iter().enumerate().map(|(i, (language_type, language))| {
                     html! {
                         <tr class={classes!()}>
                             {for col.iter().enumerate().map(|(j, (_, _, f))| {
