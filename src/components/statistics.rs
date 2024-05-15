@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use tokei::Sort;
+use tokei::{Language, Sort};
 use yew::{prelude::*, suspense::use_future_with};
 use yew_autoprops::autoprops;
 use yew_icons::{Icon, IconId};
@@ -111,18 +111,36 @@ pub fn statistics_view(repository: &Arc<GitHubRepository>) -> HtmlResult {
 #[autoprops]
 #[function_component(TableView)]
 pub fn table_view(statistics: &Arc<Statistics>) -> HtmlResult {
+    fn order_by<O: Ord, F: Fn(&Language) -> O>(la: &Language, lb: &Language, f: F, asc: bool) -> std::cmp::Ordering {
+        if asc {
+            f(la).cmp(&f(lb))
+        } else {
+            f(lb).cmp(&f(la))
+        }
+    }
+
     let Some(location) = use_location() else {
         return Ok(html! { <RouterUnavailable/> });
     };
     let query = TableViewParamsModel::from_query(&location.query::<Vec<(String, String)>>().unwrap());
     let mut languages: Vec<_> = statistics.languages.iter().collect();
-    match query.map(|q| q.order_by) {
-        Ok(Some(Sort::Blanks)) => languages.sort_by(|(_, la), (_, lb)| lb.blanks.cmp(&la.blanks)),
-        Ok(Some(Sort::Comments)) => languages.sort_by(|(_, la), (_, lb)| lb.comments.cmp(&la.comments)),
-        Ok(Some(Sort::Code)) => languages.sort_by(|(_, la), (_, lb)| lb.code.cmp(&la.code)),
-        Ok(Some(Sort::Files)) => languages.sort_by(|(_, la), (_, lb)| lb.reports.len().cmp(&la.reports.len())),
-        Ok(Some(Sort::Lines)) => languages.sort_by(|(_, la), (_, lb)| lb.lines().cmp(&la.lines())),
-        Ok(None) => (),
+    match query.map(|q| (q.order_by, q.asc)) {
+        Ok((Some(Sort::Blanks), asc)) => languages.sort_by(|(_, la), (_, lb)| {
+            order_by(la, lb, |l| l.blanks, matches!(asc.as_ref().map(|a| a == "true"), Some(true)))
+        }),
+        Ok((Some(Sort::Comments), asc)) => languages.sort_by(|(_, la), (_, lb)| {
+            order_by(la, lb, |l| l.comments, matches!(asc.as_ref().map(|a| a == "true"), Some(true)))
+        }),
+        Ok((Some(Sort::Code), asc)) => languages.sort_by(|(_, la), (_, lb)| {
+            order_by(la, lb, |l| l.code, matches!(asc.as_ref().map(|a| a == "true"), Some(true)))
+        }),
+        Ok((Some(Sort::Files), asc)) => languages.sort_by(|(_, la), (_, lb)| {
+            order_by(la, lb, |l| l.reports.len(), matches!(asc.as_ref().map(|a| a == "true"), Some(true)))
+        }),
+        Ok((Some(Sort::Lines), asc)) => languages.sort_by(|(_, la), (_, lb)| {
+            order_by(la, lb, |l| l.lines(), matches!(asc.as_ref().map(|a| a == "true"), Some(true)))
+        }),
+        Ok((None, _asc)) => (),                                  // TODO ascending language name
         Err(_) => gloo::console::warn!("Failed to parse query"), // TODO error handling
     }
 

@@ -26,7 +26,7 @@ pub struct TableViewParamsModel {
     )]
     pub order_by: Option<Sort>,
     #[serde(skip_serializing_if = "Option::is_none", with = "option_as_vec")]
-    pub desc: Option<bool>,
+    pub asc: Option<String>, // TODO bool!!!
 }
 impl QueryParams for TableViewParamsModel {}
 // TODO implement Serialize for tokei::Sort
@@ -146,12 +146,16 @@ mod tests {
 
     #[test]
     fn test_table_view_params() {
-        let target = TableViewParamsModel { order_by: Some(Sort::Code), desc: None };
-
+        let target = TableViewParamsModel { order_by: Some(Sort::Code), asc: None };
         let query = target.into_query().unwrap();
         assert_eq!(query, vec![("order_by".to_string(), "code".to_string())]);
-
         let params = TableViewParamsModel::from_query(&query).unwrap();
         assert_eq!(params, target);
+
+        let target2 = TableViewParamsModel { order_by: Some(Sort::Files), asc: Some("true".to_string()) };
+        let query = target2.into_query().unwrap();
+        assert_eq!(query, vec![("order_by".to_string(), "files".to_string()), ("asc".to_string(), "true".to_string())]);
+        let params = TableViewParamsModel::from_query(&query).unwrap();
+        assert_eq!(params, target2);
     }
 }
