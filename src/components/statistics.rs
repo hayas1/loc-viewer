@@ -222,6 +222,7 @@ pub fn table_header_col(
     #[prop_or_default] class: &Classes,
     children: &Children,
 ) -> HtmlResult {
+    // TODO implement sort button
     let popup = matches!(focused.map(|(_, c)| c == col), Some(true));
 
     Ok(html! {
