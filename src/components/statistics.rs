@@ -8,7 +8,7 @@ use yew_router::hooks::use_location;
 use super::{
     background::{Pane, ResponsivePanesFrame},
     forms::{RepoInfoForms, RepoUrlBar},
-    query_parameters::ParamsModel,
+    query_parameters::StatisticsParamsModel,
     routes::RouterUnavailable,
 };
 use crate::github::{repository::GitHubRepository, statistics::Statistics};
@@ -21,7 +21,7 @@ pub fn statistics_page(host: &String, owner: &String, repo: &String) -> HtmlResu
     let Some(location) = use_location() else {
         return Ok(html! { <RouterUnavailable/> });
     };
-    let query = ParamsModel::from_query(&location.query::<Vec<(String, String)>>().unwrap());
+    let query = StatisticsParamsModel::from_query(&location.query::<Vec<(String, String)>>().unwrap());
     let repository = Arc::new(GitHubRepository::new(owner, repo));
     let repository_url = repository.to_url().unwrap().to_string();
 

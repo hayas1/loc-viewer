@@ -5,7 +5,7 @@ use yew_autoprops::autoprops;
 use yew_icons::{Icon, IconId};
 use yew_router::hooks::use_navigator;
 
-use super::{query_parameters::ParamsModel, routes::Route};
+use super::{query_parameters::StatisticsParamsModel, routes::Route};
 use crate::{
     error::{render::Unreachable, Result},
     github::repository::GitHubRepository,
@@ -89,7 +89,7 @@ pub fn repo_info_forms() -> HtmlResult {
         let (host_input, owner_input, repo_input) = (host_input.clone(), owner_input.clone(), repo_input.clone());
         let (sha_input, paths_input, excluded_input) = (sha_input.clone(), paths_input.clone(), excluded_input.clone());
         Callback::from(move |_| {
-            let result: Result<(Route, ParamsModel)> = (|| {
+            let result: Result<(Route, StatisticsParamsModel)> = (|| {
                 let host = host_input
                     .cast::<HtmlInputElement>()
                     .ok_or_else(|| anyhow::anyhow!(Unreachable::DomMaybeChanged))?
@@ -124,7 +124,7 @@ pub fn repo_info_forms() -> HtmlResult {
                     .ok_or_else(|| anyhow::anyhow!(Unreachable::DomMaybeChanged))?
                     .value();
                 let excluded = if excluded.is_empty() { Vec::new() } else { vec![excluded] };
-                Ok((Route::Statistics { host, owner, repo }, ParamsModel { sha, paths, excluded }))
+                Ok((Route::Statistics { host, owner, repo }, StatisticsParamsModel { sha, paths, excluded }))
             })();
             match (navigator.clone(), result) {
                 (None, _) => gloo::console::error!("Navigator is not available"),

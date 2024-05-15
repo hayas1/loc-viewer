@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Eq, PartialEq, Default, Serialize, Deserialize)]
 #[serde(default)]
-pub struct ParamsModel {
+pub struct StatisticsParamsModel {
     #[serde(skip_serializing_if = "Option::is_none", with = "option_as_vec")]
     pub sha: Option<String>,
     #[serde(skip_serializing_if = "Vec::is_empty")]
@@ -42,7 +42,7 @@ pub mod option_as_vec {
     }
 }
 
-impl ParamsModel {
+impl StatisticsParamsModel {
     // TODO return Result<Vec<(String, String)>, Vec<(String, String)>>
     pub fn into_query(&self) -> Result<Vec<(String, String)>> {
         // TODO do not Self -> serde_json::Value -> Vec[(String, String)], but Self -> Vec[(String, String)]
@@ -76,7 +76,7 @@ mod tests {
 
     #[test]
     fn test_into_query() {
-        let params = ParamsModel {
+        let params = StatisticsParamsModel {
             sha: Some("master".to_string()),
             paths: vec!["/src".to_string(), "/test".to_string()],
             excluded: vec![],
@@ -99,10 +99,10 @@ mod tests {
             ("paths".to_string(), "/src".to_string()),
             ("paths".to_string(), "/test".to_string()),
         ];
-        let params = ParamsModel::from_query(&query).unwrap();
+        let params = StatisticsParamsModel::from_query(&query).unwrap();
         assert_eq!(
             params,
-            ParamsModel {
+            StatisticsParamsModel {
                 sha: Some("main".to_string()),
                 paths: vec!["/src".to_string(), "/test".to_string()],
                 excluded: vec![]
