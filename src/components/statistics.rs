@@ -8,7 +8,7 @@ use yew_router::hooks::use_location;
 use super::{
     background::{Pane, ResponsivePanesFrame},
     forms::{RepoInfoForms, RepoUrlBar},
-    query_parameters::StatisticsParamsModel,
+    query_parameters::{QueryParams, StatisticsParamsModel},
     routes::RouterUnavailable,
 };
 use crate::github::{repository::GitHubRepository, statistics::Statistics};

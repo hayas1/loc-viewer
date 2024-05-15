@@ -1,7 +1,8 @@
 use std::collections::HashMap;
 
 use crate::error::{convert::Unreachable, Result};
-use serde::{Deserialize, Serialize};
+use serde::{de::DeserializeOwned, Deserialize, Serialize, Serializer};
+use tokei::Sort;
 
 #[derive(Debug, Clone, Eq, PartialEq, Default, Serialize, Deserialize)]
 #[serde(default)]
@@ -12,6 +13,39 @@ pub struct StatisticsParamsModel {
     pub paths: Vec<String>,
     #[serde(skip_serializing_if = "Vec::is_empty")]
     pub excluded: Vec<String>,
+}
+impl QueryParams for StatisticsParamsModel {}
+
+#[derive(Debug, Clone, Eq, PartialEq, Default, Serialize, Deserialize)]
+#[serde(default)]
+pub struct TableViewParamsModel {
+    #[serde(
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "option_as_vec::deserialize",
+        serialize_with = "serialize_option_sort_as_vec"
+    )]
+    pub order_by: Option<Sort>,
+    #[serde(skip_serializing_if = "Option::is_none", with = "option_as_vec")]
+    pub desc: Option<bool>,
+}
+impl QueryParams for TableViewParamsModel {}
+// TODO implement Serialize for tokei::Sort
+pub fn serialize_option_sort_as_vec<S>(value: &Option<Sort>, serializer: S) -> Result<S::Ok, S::Error>
+where
+    S: Serializer,
+{
+    #[derive(Serialize)]
+    #[serde(rename_all = "lowercase", remote = "Sort")]
+    enum SortDef {
+        Blanks,
+        Comments,
+        Code,
+        Files,
+        Lines,
+    }
+    #[derive(Serialize)]
+    struct Ser<'a>(#[serde(with = "SortDef")] &'a Sort);
+    value.as_ref().map(Ser).into_iter().collect::<Vec<_>>().serialize(serializer)
 }
 
 // TODO can we use serde_with crate?
@@ -42,9 +76,10 @@ pub mod option_as_vec {
     }
 }
 
-impl StatisticsParamsModel {
+// TODO derive macro
+pub trait QueryParams: Serialize + DeserializeOwned {
     // TODO return Result<Vec<(String, String)>, Vec<(String, String)>>
-    pub fn into_query(&self) -> Result<Vec<(String, String)>> {
+    fn into_query(&self) -> Result<Vec<(String, String)>> {
         // TODO do not Self -> serde_json::Value -> Vec[(String, String)], but Self -> Vec[(String, String)]
         let value =
             serde_json::to_value(self).map_err(|_| anyhow::anyhow!(Unreachable::StructShouldBeConvertToValue))?;
@@ -53,9 +88,8 @@ impl StatisticsParamsModel {
         let query = map.into_iter().flat_map(|(key, vs)| vs.into_iter().map(move |s| (key.clone(), s))).collect();
         Ok(query)
     }
-
     // TODO return Result<Self, Self>
-    pub fn from_query(query: &[(String, String)]) -> Result<Self> {
+    fn from_query(query: &[(String, String)]) -> Result<Self> {
         // TODO do not Vec[(String, String)] -> serde_json::Value -> Self, but Vec[(String, String)] -> Self
         let mut map = HashMap::new();
         for (key, value) in query {
@@ -108,5 +142,16 @@ mod tests {
                 excluded: vec![]
             }
         );
+    }
+
+    #[test]
+    fn test_table_view_params() {
+        let target = TableViewParamsModel { order_by: Some(Sort::Code), desc: None };
+
+        let query = target.into_query().unwrap();
+        assert_eq!(query, vec![("order_by".to_string(), "code".to_string())]);
+
+        let params = TableViewParamsModel::from_query(&query).unwrap();
+        assert_eq!(params, target);
     }
 }

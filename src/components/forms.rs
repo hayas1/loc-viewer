@@ -5,7 +5,10 @@ use yew_autoprops::autoprops;
 use yew_icons::{Icon, IconId};
 use yew_router::hooks::use_navigator;
 
-use super::{query_parameters::StatisticsParamsModel, routes::Route};
+use super::{
+    query_parameters::{QueryParams, StatisticsParamsModel},
+    routes::Route,
+};
 use crate::{
     error::{render::Unreachable, Result},
     github::repository::GitHubRepository,
