@@ -4,15 +4,19 @@ use tokei::{Language, Sort};
 use yew::{prelude::*, suspense::use_future_with};
 use yew_autoprops::autoprops;
 use yew_icons::{Icon, IconId};
-use yew_router::hooks::use_location;
+use yew_router::hooks::{use_location, use_navigator, use_route};
 
 use super::{
     background::{Pane, ResponsivePanesFrame},
     forms::{RepoInfoForms, RepoUrlBar},
     query_parameters::{QueryParams, StatisticsParamsModel, TableViewParamsModel},
+    routes::Route,
     routes::RouterUnavailable,
 };
-use crate::github::{repository::GitHubRepository, statistics::Statistics};
+use crate::{
+    error::Result,
+    github::{repository::GitHubRepository, statistics::Statistics},
+};
 
 pub const CAPTION: &str = "Statistics";
 
@@ -148,13 +152,13 @@ pub fn table_view(statistics: &Arc<Statistics>) -> HtmlResult {
     let table_header = classes!("text-teal-900", "bg-teal-50", "dark:text-teal-50", "dark:bg-teal-800");
     let (lm, th) = (leftmost.clone(), table_header.clone());
 
-    let col: [(_, _, Box<dyn Fn(&tokei::Language) -> _>); 6] = [
-        ("Language", IconId::OcticonsRocket16, Box::new(|l| l.reports.len())),
-        ("Files", IconId::OcticonsFile16, Box::new(|l| l.reports.len())),
-        ("Lines", IconId::OcticonsThreeBars16, Box::new(|l| l.lines())),
-        ("Code", IconId::OcticonsCode16, Box::new(|l| l.code)),
-        ("Comments", IconId::OcticonsComment16, Box::new(|l| l.comments)),
-        ("Blanks", IconId::OcticonsDash16, Box::new(|l| l.blanks)),
+    let col: [(_, _, _, Box<dyn Fn(&tokei::Language) -> _>); 6] = [
+        ("Language", None, IconId::OcticonsRocket16, Box::new(|l| l.reports.len())),
+        ("Files", Some(Sort::Files), IconId::OcticonsFile16, Box::new(|l| l.reports.len())),
+        ("Lines", Some(Sort::Lines), IconId::OcticonsThreeBars16, Box::new(|l| l.lines())),
+        ("Code", Some(Sort::Code), IconId::OcticonsCode16, Box::new(|l| l.code)),
+        ("Comments", Some(Sort::Comments), IconId::OcticonsComment16, Box::new(|l| l.comments)),
+        ("Blanks", Some(Sort::Blanks), IconId::OcticonsDash16, Box::new(|l| l.blanks)),
     ];
 
     let focused = use_state(|| None);
@@ -163,17 +167,17 @@ pub fn table_view(statistics: &Arc<Statistics>) -> HtmlResult {
         <table class={classes!("table-auto")}>
             <thead>
                 <tr>
-                    {for col.iter().enumerate().map(|(j, (title, icon_id, _))| {
+                    {for col.iter().enumerate().map(|(j, (title, sort, icon_id, _))| {
                         html! {
                             if j == 0 {
                                 <th scope="col" class={classes!(lm.clone(), th.clone())} title={&title[..]}>
-                                    <div class={classes!("flex", "justify-center")}>
+                                    <TableHeader>
                                         <Icon icon_id={icon_id.clone()}/>
-                                    </div>
+                                    </TableHeader>
                                 </th>
                             } else {
                                 <th scope="col" class={classes!(th.clone())} title={&title[..]}>
-                                    <TableHeaderCol focused={*focused} col={j} title={&title[..]}>
+                                    <TableHeaderCol focused={*focused} col={j} sort={sort.clone()} title={&title[..]}>
                                         <Icon icon_id={icon_id.clone()}/>
                                     </TableHeaderCol>
                                 </th>
@@ -186,7 +190,7 @@ pub fn table_view(statistics: &Arc<Statistics>) -> HtmlResult {
                 {for languages.iter().enumerate().map(|(i, (language_type, language))| {
                     html! {
                         <tr class={classes!()}>
-                            {for col.iter().enumerate().map(|(j, (_, _, f))| {
+                            {for col.iter().enumerate().map(|(j, (_, _, _, f))| {
                                 html! {
                                     if j == 0 {
                                         <th scope="row" class={classes!(lm.clone())}>
@@ -214,22 +218,86 @@ pub fn table_view(statistics: &Arc<Statistics>) -> HtmlResult {
 }
 
 #[autoprops]
+#[function_component(TableHeader)]
+pub fn table_header_row(children: &Children) -> HtmlResult {
+    let (Some(navigator), Some(location), Some(route)) = (use_navigator(), use_location(), use_route::<Route>()) else {
+        return Ok(html! { <RouterUnavailable/> });
+    };
+
+    let clear_order = Callback::from(move |_| {
+        let param: Result<Vec<(String, String)>> = (|| {
+            let statistics_params = StatisticsParamsModel::from_query(
+                &location.query::<Vec<(String, String)>>().map_err(anyhow::Error::from)?,
+            )?;
+            let params = [statistics_params.into_query()?];
+            Ok(params.into_iter().flatten().collect())
+        })();
+        match param {
+            Ok(param) => match navigator.replace_with_query(&route, &param) {
+                Ok(_) => (),
+                Err(err) => gloo::console::error!(err.to_string()), // TODO error handling
+            },
+            Err(err) => gloo::console::error!(err.to_string()), // TODO error handling
+        }
+    });
+
+    Ok(html! {
+        <div class={classes!("flex", "justify-center")}>
+            <button onclick={clear_order}>
+                { children.clone() }
+            </button>
+        </div>
+    })
+}
+
+#[autoprops]
 #[function_component(TableHeaderCol)]
 pub fn table_header_col(
     focused: &Option<(usize, usize)>,
     col: usize,
     title: &String,
+    #[prop_or_default] sort: &Option<Sort>,
     #[prop_or_default] class: &Classes,
     children: &Children,
 ) -> HtmlResult {
     // TODO implement sort button
+    let (Some(navigator), Some(location), Some(route)) = (use_navigator(), use_location(), use_route::<Route>()) else {
+        return Ok(html! { <RouterUnavailable/> });
+    };
+
+    let order_by = {
+        let (navigator, location, route) = (navigator.clone(), location.clone(), route.clone());
+        let sort = sort.clone();
+        Callback::from(move |_| {
+            let param: Result<Vec<(String, String)>> = (|| {
+                let statistics_params = StatisticsParamsModel::from_query(
+                    &location.query::<Vec<(String, String)>>().map_err(anyhow::Error::from)?,
+                )?;
+                let mut table_params = TableViewParamsModel::from_query(
+                    &location.query::<Vec<(String, String)>>().map_err(anyhow::Error::from)?,
+                )?;
+                table_params.order_by = sort;
+                table_params.asc = if table_params.asc.is_none() { Some("true".to_string()) } else { None };
+                let params = [statistics_params.into_query()?, table_params.into_query().unwrap()];
+                Ok(params.into_iter().flatten().collect())
+            })();
+            match param {
+                Ok(param) => match navigator.replace_with_query(&route, &param) {
+                    Ok(_) => (),
+                    Err(err) => gloo::console::error!(err.to_string()), // TODO error handling
+                },
+                Err(err) => gloo::console::error!(err.to_string()), // TODO error handling
+            }
+        })
+    };
+
     let popup = matches!(focused.map(|(_, c)| c == col), Some(true));
 
     Ok(html! {
         <div class={classes!("flex", "justify-center", "relative", "bg-cover", class.clone())} title={title.clone()}>
-            <div class={classes!("px-4", "py-2", popup.then(|| "opacity-20"))}>
+            <button onclick={order_by} class={classes!("px-4", "py-2", popup.then(|| "opacity-20"))}>
                 {children.clone()}
-            </div>
+            </button>
             if popup {
                 <div class={classes!("absolute", "top-1/2", "left-1/2", "-translate-x-1/2", "-translate-y-1/2")}>
                     {title.clone()}
