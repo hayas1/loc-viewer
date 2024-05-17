@@ -10,8 +10,7 @@ use super::{
     background::{Pane, ResponsivePanesFrame},
     forms::{RepoInfoForms, RepoUrlBar},
     query_parameters::{QueryParams, StatisticsParamsModel, TableViewParamsModel},
-    routes::Route,
-    routes::RouterUnavailable,
+    routes::{Route, RouterUnavailable, Unreachable},
 };
 use crate::{
     error::Result,
@@ -115,12 +114,8 @@ pub fn statistics_view(repository: &Arc<GitHubRepository>) -> HtmlResult {
 #[autoprops]
 #[function_component(TableView)]
 pub fn table_view(statistics: &Arc<Statistics>) -> HtmlResult {
-    fn order_by<O: Ord, F: Fn(&Language) -> O>(la: &Language, lb: &Language, f: F, asc: bool) -> std::cmp::Ordering {
-        if asc {
-            f(la).cmp(&f(lb))
-        } else {
-            f(lb).cmp(&f(la))
-        }
+    fn order_by<O: Ord, F: Fn(&Language) -> O>(la: &Language, lb: &Language, f: F) -> std::cmp::Ordering {
+        f(lb).cmp(&f(la))
     }
 
     let Some(location) = use_location() else {
@@ -128,23 +123,13 @@ pub fn table_view(statistics: &Arc<Statistics>) -> HtmlResult {
     };
     let query = TableViewParamsModel::from_query(&location.query::<Vec<(String, String)>>().unwrap());
     let mut languages: Vec<_> = statistics.languages.iter().collect();
-    match query.map(|q| (q.order_by, q.asc)) {
-        Ok((Some(Sort::Blanks), asc)) => languages.sort_by(|(_, la), (_, lb)| {
-            order_by(la, lb, |l| l.blanks, matches!(asc.as_ref().map(|a| a == "true"), Some(true)))
-        }),
-        Ok((Some(Sort::Comments), asc)) => languages.sort_by(|(_, la), (_, lb)| {
-            order_by(la, lb, |l| l.comments, matches!(asc.as_ref().map(|a| a == "true"), Some(true)))
-        }),
-        Ok((Some(Sort::Code), asc)) => languages.sort_by(|(_, la), (_, lb)| {
-            order_by(la, lb, |l| l.code, matches!(asc.as_ref().map(|a| a == "true"), Some(true)))
-        }),
-        Ok((Some(Sort::Files), asc)) => languages.sort_by(|(_, la), (_, lb)| {
-            order_by(la, lb, |l| l.reports.len(), matches!(asc.as_ref().map(|a| a == "true"), Some(true)))
-        }),
-        Ok((Some(Sort::Lines), asc)) => languages.sort_by(|(_, la), (_, lb)| {
-            order_by(la, lb, |l| l.lines(), matches!(asc.as_ref().map(|a| a == "true"), Some(true)))
-        }),
-        Ok((None, _asc)) => (),                                  // TODO ascending language name
+    match query.map(|TableViewParamsModel { order_by }| order_by) {
+        Ok(Some(Sort::Blanks)) => languages.sort_by(|(_, la), (_, lb)| order_by(la, lb, |l| l.blanks)),
+        Ok(Some(Sort::Comments)) => languages.sort_by(|(_, la), (_, lb)| order_by(la, lb, |l| l.comments)),
+        Ok(Some(Sort::Code)) => languages.sort_by(|(_, la), (_, lb)| order_by(la, lb, |l| l.code)),
+        Ok(Some(Sort::Files)) => languages.sort_by(|(_, la), (_, lb)| order_by(la, lb, |l| l.reports.len())),
+        Ok(Some(Sort::Lines)) => languages.sort_by(|(_, la), (_, lb)| order_by(la, lb, |l| l.lines())),
+        Ok(None) => (),                                          // TODO ascending language name
         Err(_) => gloo::console::warn!("Failed to parse query"), // TODO error handling
     }
 
@@ -264,21 +249,28 @@ pub fn table_header_col(
     let (Some(navigator), Some(location), Some(route)) = (use_navigator(), use_location(), use_route::<Route>()) else {
         return Ok(html! { <RouterUnavailable/> });
     };
+    let Ok(statistics_params): Result<StatisticsParamsModel> = (|| {
+        Ok(StatisticsParamsModel::from_query(&location.query::<Vec<(String, String)>>().map_err(anyhow::Error::from)?)?)
+    })() else {
+        return Ok(html! { <Unreachable/> });
+    };
+    let Ok(table_params): Result<TableViewParamsModel> = (|| {
+        Ok(TableViewParamsModel::from_query(&location.query::<Vec<(String, String)>>().map_err(anyhow::Error::from)?)?)
+    })() else {
+        return Ok(html! { <Unreachable/> });
+    };
+
+    let popup = matches!(focused.map(|(_, c)| c == col), Some(true));
+    let order_by_this = &table_params.order_by == sort;
 
     let order_by = {
-        let (navigator, location, route) = (navigator.clone(), location.clone(), route.clone());
+        let (navigator, route) = (navigator.clone(), route.clone());
+        let (statistics_params, table_params) = (statistics_params, table_params);
         let sort = sort.clone();
         Callback::from(move |_| {
             let param: Result<Vec<(String, String)>> = (|| {
-                let statistics_params = StatisticsParamsModel::from_query(
-                    &location.query::<Vec<(String, String)>>().map_err(anyhow::Error::from)?,
-                )?;
-                let mut table_params = TableViewParamsModel::from_query(
-                    &location.query::<Vec<(String, String)>>().map_err(anyhow::Error::from)?,
-                )?;
-                table_params.order_by = sort;
-                table_params.asc = if table_params.asc.is_none() { Some("true".to_string()) } else { None };
-                let params = [statistics_params.into_query()?, table_params.into_query().unwrap()];
+                let table_params = TableViewParamsModel { order_by: sort, ..table_params };
+                let params = [statistics_params.into_query()?, table_params.into_query()?];
                 Ok(params.into_iter().flatten().collect())
             })();
             match param {
@@ -291,11 +283,9 @@ pub fn table_header_col(
         })
     };
 
-    let popup = matches!(focused.map(|(_, c)| c == col), Some(true));
-
     Ok(html! {
         <div class={classes!("flex", "justify-center", "relative", "bg-cover", class.clone())} title={title.clone()}>
-            <button onclick={order_by} class={classes!("px-4", "py-2", popup.then(|| "opacity-20"))}>
+            <button onclick={order_by} class={classes!("px-4", "py-2", popup.then(|| "opacity-20"), order_by_this.then(|| classes!("bg-teal-200", "dark:bg-teal-700")))}>
                 {children.clone()}
             </button>
             if popup {

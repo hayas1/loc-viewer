@@ -99,3 +99,16 @@ pub fn invalid_context() -> HtmlResult {
         </div>
     })
 }
+
+#[autoprops]
+#[function_component(Unreachable)]
+pub fn unreachable() -> HtmlResult {
+    Ok(html! {
+        <div>
+            <h1>{ "Unreachable" }</h1>
+            <GoHome navigator={None}>
+                <span>{ "Go Home" }</span>
+            </GoHome>
+        </div>
+    })
+}
