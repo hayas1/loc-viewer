@@ -87,7 +87,6 @@ pub fn repo_info_forms() -> HtmlResult {
 
     let (host_input, owner_input, repo_input) = (use_node_ref(), use_node_ref(), use_node_ref());
     let (sha_input, paths_input, excluded_input) = (use_node_ref(), use_node_ref(), use_node_ref());
-
     let statistics = {
         let (host_input, owner_input, repo_input) = (host_input.clone(), owner_input.clone(), repo_input.clone());
         let (sha_input, paths_input, excluded_input) = (sha_input.clone(), paths_input.clone(), excluded_input.clone());
@@ -222,41 +221,78 @@ pub fn repo_info_forms() -> HtmlResult {
             {for inputs.into_iter().map(|(input, id, label, title, placeholder, aria_label, required, icon)| {
                 html! {
                     <div class={classes!((!*more && !required).then(|| "hidden"))}>
-                        <div class={classes!("pt-4", "h-10", "w-full", "flex", "items-center", "border-b", "border-teal-500")}>
-                            <label for={id} class={classes!("w-20", "text-sm", "text-right", "text-teal-500", "dark:text-teal-50")}>
-                                <p class={classes!(required.then(|| "font-bold"))}>{label}</p>
-                            </label>
-                            <input ref={input}
-                                class={classes!(
-                                    "ps-3", "appearance-none", "border-none", "w-full",
-                                    "placeholder-teal-600/30", "dark:placeholder-teal-50/30", "text-teal-700", "dark:text-teal-50",
-                                    "rounded-sm", "leading-tight", "focus:outline-none", "bg-transparent"
-                                )}
-                                id={id}
-                                type="text"
-                                title={title}
-                                placeholder={placeholder}
-                                aria-label={aria_label}
-                            />
-                            <Icon icon_id={icon} class={classes!("h-5", "m-2", "text-teal-500", "dark:text-teal-50")}/>
-                        </div>
+                        <BaseInfoForm
+                            input_ref={input}
+                            id={id}
+                            label={label}
+                            title={title}
+                            placeholder={placeholder}
+                            aria_label={aria_label}
+                            required={required}
+                            icon={icon}
+                        />
                     </div>
                 }
             })}
             <div class={classes!("py-2", "text-center", "pt-4", "w-full")}>
-                <button
-                    class={classes!(
-                        "p-2", "bg-gradient-to-r", "from-teal-500", "via-teal-600", "to-teal-700", "hover:bg-gradient-to-br",
-                        "border-teal-600", "hover:border-teal-200", "focus:outline-none", "focus:border-teal-200", "text-sm",
-                        "border-2", "text-white", "rounded-full"
-                    )}
-                    onclick={statistics}
-                    type="button"
-                    title={"Get statistics!"}
-                >
-                    { "Toukei" }
-                </button>
+                <StatisticsButton onclick={statistics}>
+                    {"Toukei"}
+                </StatisticsButton>
             </div>
         </div>
+    })
+}
+
+#[autoprops]
+#[function_component(BaseInfoForm)]
+pub fn base_info_form(
+    input_ref: NodeRef,
+    id: &String,
+    label: &String,
+    title: &String,
+    placeholder: &String,
+    aria_label: &String,
+    required: &bool,
+    icon: &IconId,
+) -> HtmlResult {
+    Ok(html! {
+        <div class={classes!("pt-4", "h-10", "w-full", "flex", "items-center", "border-b", "border-teal-500")}>
+            <label for={id.clone()} class={classes!("w-20", "text-sm", "text-right", "text-teal-500", "dark:text-teal-50")}>
+                <p class={classes!(required.then(|| "font-bold"))}>{label}</p>
+            </label>
+            <input ref={input_ref}
+                class={classes!(
+                    "ps-3", "appearance-none", "border-none", "w-full",
+                    "placeholder-teal-600/30", "dark:placeholder-teal-50/30", "text-teal-700", "dark:text-teal-50",
+                    "rounded-sm", "leading-tight", "focus:outline-none", "bg-transparent"
+                )}
+                id={id.clone()}
+                type="text"
+                title={title.clone()}
+                placeholder={placeholder.clone()}
+                aria-label={aria_label.clone()}
+            />
+            <Icon icon_id={icon.clone()} class={classes!("h-5", "m-2", "text-teal-500", "dark:text-teal-50")}/>
+        </div>
+    })
+}
+
+// TODO generics
+#[autoprops]
+#[function_component(StatisticsButton)]
+pub fn statistics_button(onclick: Callback<MouseEvent>, children: &Children) -> HtmlResult {
+    Ok(html! {
+        <button
+            class={classes!(
+                "p-2", "bg-gradient-to-r", "from-teal-500", "via-teal-600", "to-teal-700", "hover:bg-gradient-to-br",
+                "border-teal-600", "hover:border-teal-200", "focus:outline-none", "focus:border-teal-200", "text-sm",
+                "border-2", "text-white", "rounded-full"
+            )}
+            onclick={onclick}
+            type="button"
+            title={"Get statistics!"}
+        >
+            { children.clone() }
+        </button>
     })
 }
