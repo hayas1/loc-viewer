@@ -148,37 +148,17 @@ pub fn repo_info_forms() -> HtmlResult {
             "Host",
             "Repository host",
             "https://github.com",
-            "RepositoryHost",
             false,
             IconId::OcticonsMarkGithub16,
         ),
-        (
-            owner_input,
-            "owner-input",
-            "Owner",
-            "Repository owner",
-            "hayas1",
-            "RepositoryOwner",
-            true,
-            IconId::OcticonsOrganization16,
-        ),
-        (
-            repo_input,
-            "repo-input",
-            "Repo",
-            "Repository name",
-            "loc-viewer",
-            "RepositoryName",
-            true,
-            IconId::OcticonsRepo16,
-        ),
+        (owner_input, "owner-input", "Owner", "Repository owner", "hayas1", true, IconId::OcticonsOrganization16),
+        (repo_input, "repo-input", "Repo", "Repository name", "loc-viewer", true, IconId::OcticonsRepo16),
         (
             sha_input,
             "sha-input",
             "SHA",
             "SHA of the Repository to get statistics",
             "main",
-            "RepositorySHA",
             false,
             IconId::OcticonsGitCommit16,
         ),
@@ -188,7 +168,6 @@ pub fn repo_info_forms() -> HtmlResult {
             "Paths",
             "Paths of the repository to get statistics",
             "/",
-            "RepositoryPaths",
             false,
             IconId::OcticonsFileDirectoryOpenFill16,
         ),
@@ -198,7 +177,6 @@ pub fn repo_info_forms() -> HtmlResult {
             "Excluded",
             "Excluded paths of the repository to get statistics",
             "",
-            "RepositoryExcluded",
             false,
             IconId::OcticonsSkip16,
         ),
@@ -218,7 +196,7 @@ pub fn repo_info_forms() -> HtmlResult {
                 }
                 {"more"}
             </p>
-            {for inputs.into_iter().map(|(input, id, label, title, placeholder, aria_label, required, icon)| {
+            {for inputs.into_iter().map(|(input, id, label, title, placeholder, required, icon)| {
                 html! {
                     <div class={classes!((!*more && !required).then(|| "hidden"))}>
                         <BaseInfoForm
@@ -227,7 +205,6 @@ pub fn repo_info_forms() -> HtmlResult {
                             label={label}
                             title={title}
                             placeholder={placeholder}
-                            aria_label={aria_label}
                             required={required}
                             icon={icon}
                         />
@@ -251,7 +228,6 @@ pub fn base_info_form(
     label: &String,
     title: &String,
     placeholder: &String,
-    aria_label: &String,
     required: &bool,
     icon: &IconId,
 ) -> HtmlResult {
@@ -270,7 +246,6 @@ pub fn base_info_form(
                 type="text"
                 title={title.clone()}
                 placeholder={placeholder.clone()}
-                aria-label={aria_label.clone()}
             />
             <Icon icon_id={icon.clone()} class={classes!("h-5", "m-2", "text-teal-500", "dark:text-teal-50")}/>
         </div>
