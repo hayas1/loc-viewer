@@ -10,6 +10,9 @@ env:
 jobs:
   build:
     runs-on: ubuntu-latest
+    outputs:
+      should-release: ${{ steps.detect-version.outputs.should-release }}
+      expected-git-tag: ${{ steps.detect-version.outputs.expected-git-tag }}
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
@@ -35,6 +38,10 @@ jobs:
         uses: actions/upload-pages-artifact@v3
         with:
           path: target/public
+
+      - name: Check version in Cargo.toml and git tag
+        uses: ./.github/actions/versions
+        id: detect-version
 
   deploy:
     needs: build
