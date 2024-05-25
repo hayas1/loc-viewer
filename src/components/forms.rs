@@ -184,7 +184,7 @@ pub fn repo_info_forms() -> HtmlResult {
 
     Ok(html! {
         <div class={classes!("flex", "flex-wrap", "w-full")}>
-            <p class={classes!("text-teal-200", "dark:text-teal-600", "w-full", "text-right")}>
+            <p class={classes!("text-teal-200", "dark:text-teal-600", "w-full", "text-right", "hidden")}> // TODO implement
                 if *more {
                     <button onclick={close_more} class={classes!("text-teal-200", "dark:text-teal-600")}>
                         <Icon icon_id={IconId::OcticonsChevronUp16} class={classes!("h-6", "inline-block")}/>
