@@ -2,40 +2,39 @@ name: Master
 
 on:
   push:
-    branches: [ "master" ]
+    branches: ["master"]
 
 env:
   CARGO_TERM_COLOR: always
 
 jobs:
-
   build:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
-    - uses: dtolnay/rust-toolchain@stable
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
 
-    - name: Cargo home
-      id: cargo-home
-      run: echo "path=${CARGO_HOME:-~/.cargo}" >>"$GITHUB_OUTPUT"
-    - uses: actions/cache@v4
-      with:
-        path: |
+      - name: Cargo home
+        id: cargo-home
+        run: echo "path=${CARGO_HOME:-~/.cargo}" >>"$GITHUB_OUTPUT"
+      - uses: actions/cache@v4
+        with:
+          path: |
             target
             ${{ steps.cargo-home.outputs.path }}
-        key: cargo-${{ hashFiles('**/Cargo.toml') }}
+          key: cargo-${{ hashFiles('**/Cargo.toml') }}
 
-    - name: Release test
-      run: cargo test --release
-    - name: Build App
-      run: yes | PUBLIC_URL="/${{ github.event.repository.name }}" ./scripts/prod-build.sh
-    - name: Overwrite 404.html for BrowserRouter
-      run: cp target/public/index.html target/public/404.html
+      - name: Release test
+        run: cargo test --release
+      - name: Build App
+        run: yes | PUBLIC_URL="/${{ github.event.repository.name }}" ./scripts/prod-build.sh
+      - name: Overwrite 404.html for BrowserRouter
+        run: cp target/public/index.html target/public/404.html
 
-    - name: Upload artifact
-      uses: actions/upload-pages-artifact@v3
-      with:
-        path: target/public
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: target/public
 
   deploy:
     needs: build
@@ -50,3 +49,24 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+
+  release-draft:
+    needs: build
+    if: needs.build.outputs.should-release == 'true'
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Push tag
+        run: |
+          git tag ${{ needs.build.outputs.expected-git-tag }}
+          git push origin ${{ needs.build.outputs.expected-git-tag }}
+      - name: Release draft
+        uses: actions/create-release@v1 # archived
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ needs.build.outputs.expected-git-tag }}
+          release_name: ${{ needs.build.outputs.expected-git-tag }}
+          draft: true

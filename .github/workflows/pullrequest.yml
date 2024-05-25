@@ -1,0 +1,46 @@
+name: Pull Request
+
+on:
+  pull_request:
+    branches: ["master"]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+      - name: Cargo home
+        id: cargo-home
+        run: echo "path=${CARGO_HOME:-~/.cargo}" >>"$GITHUB_OUTPUT"
+      - uses: actions/cache@v4
+        with:
+          path: |
+            target
+            ${{ steps.cargo-home.outputs.path }}
+          key: cargo-${{ hashFiles('**/Cargo.toml') }}
+
+      - run: cargo test --verbose
+      - run: cargo fmt --check
+
+  version:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check version in Cargo.toml and git tag
+        uses: ./.github/actions/versions
+        id: detect-version
+      - name: Add label
+        if: steps.detect-version.outputs.should-release == 'true'
+        run: |
+          gh pr edit ${{ github.event.pull_request.number }} --add-label "release"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
