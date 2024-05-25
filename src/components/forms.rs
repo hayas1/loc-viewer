@@ -18,7 +18,7 @@ use crate::{
 #[autoprops]
 #[function_component(RepoUrlBar)]
 pub fn repo_url_bar(#[prop_or_default] id: &String) -> HtmlResult {
-    let placeholder = "https://github.com/hayas1/loc-viewer";
+    let placeholder = "https://github.com/hayas1/tokei-toukei";
 
     let navigator = use_navigator();
     let url_input = use_node_ref();
@@ -108,7 +108,7 @@ pub fn repo_info_forms() -> HtmlResult {
                     .cast::<HtmlInputElement>()
                     .ok_or_else(|| anyhow::anyhow!(Unreachable::DomMaybeChanged))?
                     .value();
-                let repo = if repo.is_empty() { "loc-viewer".to_string() } else { repo };
+                let repo = if repo.is_empty() { "tokei-toukei".to_string() } else { repo };
 
                 let sha = sha_input
                     .cast::<HtmlInputElement>()
@@ -152,7 +152,7 @@ pub fn repo_info_forms() -> HtmlResult {
             IconId::OcticonsMarkGithub16,
         ),
         (owner_input, "owner-input", "Owner", "Repository owner", "hayas1", true, IconId::OcticonsOrganization16),
-        (repo_input, "repo-input", "Repo", "Repository name", "loc-viewer", true, IconId::OcticonsRepo16),
+        (repo_input, "repo-input", "Repo", "Repository name", "tokei-toukei", true, IconId::OcticonsRepo16),
         (
             sha_input,
             "sha-input",

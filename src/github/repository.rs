@@ -113,14 +113,14 @@ mod tests {
 
     #[test]
     fn test_parse_repo_url() {
-        let url = Url::parse("https://github.com/hayas1/loc-viewer").unwrap();
+        let url = Url::parse("https://github.com/hayas1/tokei-toukei").unwrap();
         let repo = GitHubRepository::from_url(&url).unwrap();
-        assert_eq!(repo, GitHubRepository::new("hayas1", "loc-viewer"));
-        assert_eq!(repo.to_url().unwrap().as_str(), "https://github.com/hayas1/loc-viewer");
+        assert_eq!(repo, GitHubRepository::new("hayas1", "tokei-toukei"));
+        assert_eq!(repo.to_url().unwrap().as_str(), "https://github.com/hayas1/tokei-toukei");
 
-        let url = Url::parse("https://github.com/hayas1/loc-viewer/").unwrap();
+        let url = Url::parse("https://github.com/hayas1/tokei-toukei/").unwrap();
         let repo = GitHubRepository::from_url(&url).unwrap();
-        assert_eq!(repo, GitHubRepository::new("hayas1", "loc-viewer"));
-        assert_eq!(repo.to_url().unwrap().as_str(), "https://github.com/hayas1/loc-viewer");
+        assert_eq!(repo, GitHubRepository::new("hayas1", "tokei-toukei"));
+        assert_eq!(repo.to_url().unwrap().as_str(), "https://github.com/hayas1/tokei-toukei");
     }
 }
